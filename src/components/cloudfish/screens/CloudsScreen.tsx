@@ -45,7 +45,7 @@ export function CloudsScreen() {
                 );
               })}
               <button className="w-full border-2 border-dashed border-border rounded-2xl py-3 text-sm text-muted hover:text-foreground hover:border-[color:var(--accent-blue)] transition-colors flex items-center justify-center gap-2">
-                <Plus className="h-4 w-4" /> Add another {p}
+                <Plus size={18} strokeWidth={1.5} /> Add another {p}
               </button>
             </div>
           </div>
