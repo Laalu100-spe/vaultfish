@@ -173,8 +173,9 @@ export function Layout({
               <span
                 style={{
                   fontFamily: '"Inter", sans-serif',
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 500,
+                  letterSpacing: "-0.01em",
                   color: active ? "#4d90fe" : "#6b7280",
                 }}
               >
