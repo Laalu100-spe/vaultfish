@@ -155,19 +155,20 @@ export function CleanScreen() {
         </span>
       </div>
 
-      <div className="space-y-2">
-        {CATS.map(cat => {
+      <div className="space-y-2 relative">
+        {CATS.map((cat, idx) => {
           const I = cat.I;
           const isOpen = open === cat.id;
           return (
             <div
               key={cat.id}
-              className="overflow-hidden clean-row"
+              className={`overflow-hidden clean-row relative ${cleaning ? "row-sweep" : ""}`}
               style={{
                 background: "rgba(255,255,255,0.025)",
                 border: "1px solid rgba(255,255,255,0.055)",
                 borderRadius: 12,
                 transition: "background 150ms ease",
+                animationDelay: cleaning ? `${idx * 80}ms` : undefined,
               }}
             >
               <div className="flex items-center gap-4" style={{ padding: "18px 20px" }}>
@@ -197,7 +198,12 @@ export function CleanScreen() {
                   <ChevronDown size={18} strokeWidth={1.5} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
                 </button>
               </div>
-              {isOpen && (
+              {cleaning && (
+                <span className="row-fish" style={{ animationDelay: `${idx * 80}ms` }}>
+                  <FishGlyph size={18} />
+                </span>
+              )}
+              {isOpen && !cleaning && (
                 <div className="border-t border-border p-3 space-y-1.5" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                   {cat.files.map(f => (
                     <div key={f} className="text-xs px-3 py-2 bg-background rounded-lg flex justify-between">
@@ -210,10 +216,12 @@ export function CleanScreen() {
             </div>
           );
         })}
+        {cleaning && <TrashAnimation />}
       </div>
 
       <button
-        onClick={() => setDone(true)}
+        onClick={startClean}
+        disabled={cleaning}
         className="w-full text-white clean-all-btn"
         style={{
           background: "#4d90fe",
