@@ -181,6 +181,3 @@ export function CleanScreen() {
     </div>
   );
 }
-
-// re-export Card to keep import graph stable
-export { Card };
