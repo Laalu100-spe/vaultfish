@@ -58,7 +58,7 @@ export function CloudsScreen() {
             <h3 className="text-lg font-semibold">Disconnect account?</h3>
             <p className="text-sm text-muted mt-1">{modal.email}</p>
             <div className="mt-4 p-3 rounded-xl bg-[color:var(--color-amber)]/10 border border-[color:var(--color-amber)]/30 flex gap-2 text-sm">
-              <AlertTriangle className="h-5 w-5 text-[color:var(--color-amber)] shrink-0" />
+              <AlertTriangle size={18} strokeWidth={1.5} className="text-[color:var(--color-amber)] shrink-0" />
               <span><b>{modal.gb} GB</b> of data on this account. Choose what to do with the files.</span>
             </div>
             <div className="mt-4 space-y-2">
