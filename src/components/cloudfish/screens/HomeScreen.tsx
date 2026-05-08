@@ -35,8 +35,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
   return (
     <div className="flex flex-col" style={{ gap: 24 }}>
       <div>
-        <h1 className="font-display tracking-tight" style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em" }}>VaultFish</h1>
-        <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: "#6b7280", marginTop: 4 }}>Across all your connected clouds</p>
+        <h1 style={{ fontFamily: '"Inter", sans-serif', fontSize: 20, fontWeight: 700, letterSpacing: "-0.03em" }}>VaultFish</h1>
+        <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.4)", letterSpacing: "-0.01em", marginTop: 4 }}>Across all your connected clouds</p>
       </div>
 
       {/* Total storage card */}
@@ -49,14 +49,14 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         <div className="relative" style={{ padding: "22px 24px" }}>
           <div className="flex items-baseline justify-between mb-4">
             <div>
-              <div className="font-mono-num" style={{ fontSize: 10, letterSpacing: "0.15em", color: "#4b5563", textTransform: "uppercase" }}>Total Storage</div>
+              <div className="section-label">Total Storage</div>
               <div className="mt-2 flex items-baseline gap-2 leading-none">
-                <span className="font-display" style={{ fontSize: 64, fontWeight: 800, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.03em" }}>82</span>
-                <span className="font-display" style={{ fontSize: 24, fontWeight: 400, color: "rgba(255,255,255,0.5)", lineHeight: 1 }}>GB</span>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: "rgba(255,255,255,0.3)" }}>/ 150 GB used</span>
+                <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 72, fontWeight: 900, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>82</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 18, fontWeight: 300, color: "rgba(255,255,255,0.4)", letterSpacing: "-0.02em", lineHeight: 1 }}>GB</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.25)", letterSpacing: "-0.01em" }}>/ 150 GB used</span>
               </div>
             </div>
-            <div className="text-xs font-mono-num" style={{ color: "rgba(255,255,255,0.4)" }}>55%</div>
+            <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontVariantNumeric: "tabular-nums" }}>55%</div>
           </div>
           <StorageBar pct={55} fill="linear-gradient(90deg, #a78bfa, #4d90fe, #2dd4bf)" dotColor="#2dd4bf" />
           <div className="mt-5 space-y-3.5">
