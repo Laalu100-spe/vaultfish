@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 
@@ -68,5 +69,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <Toaster
+        position="top-center"
+        theme="dark"
+        toastOptions={{
+          style: {
+            background: "rgba(14,17,24,0.95)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 10,
+            color: "rgba(255,255,255,0.92)",
+            fontFamily: '"Inter", sans-serif',
+            fontSize: 13,
+            fontWeight: 500,
+          },
+        }}
+        duration={2500}
+      />
+    </>
+  );
 }
