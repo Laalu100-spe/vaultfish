@@ -124,8 +124,8 @@ export function CleanScreen() {
                   <I />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, color: "#ffffff" }}>{cat.t}</div>
-                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.9)" }}>{cat.t}</div>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.35)", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
                     {cat.n} • {cat.s}
                   </div>
                 </div>
