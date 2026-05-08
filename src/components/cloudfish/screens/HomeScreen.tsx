@@ -43,7 +43,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
     <div className="flex flex-col" style={{ gap: 24 }}>
       <div>
         <h1 className="font-display tracking-tight" style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em" }}>VaultFish</h1>
-        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 14, color: "#6b7280", marginTop: 4 }}>Across all your connected clouds</p>
+        <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, color: "#6b7280", marginTop: 4 }}>Across all your connected clouds</p>
       </div>
 
       {/* Total storage card */}
@@ -60,7 +60,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
               <div className="mt-2 flex items-baseline gap-2 leading-none">
                 <span className="font-display" style={{ fontSize: 64, fontWeight: 800, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.03em" }}>82</span>
                 <span className="font-display" style={{ fontSize: 24, fontWeight: 400, color: "rgba(255,255,255,0.5)", lineHeight: 1 }}>GB</span>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "rgba(255,255,255,0.3)" }}>/ 150 GB used</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: "rgba(255,255,255,0.3)" }}>/ 150 GB used</span>
               </div>
             </div>
             <div className="text-xs font-mono-num" style={{ color: "rgba(255,255,255,0.4)" }}>55%</div>
@@ -74,7 +74,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   <div className="flex justify-between text-sm mb-1.5">
                     <span className="flex items-center gap-2">
                       <PlatformIcon name={a.name} size={16} />
-                      <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[a.name] }}>{a.name}</span>
+                      <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[a.name] }}>{a.name}</span>
                     </span>
                     <span className="text-muted font-mono-num">{a.used} GB / {a.total} GB</span>
                   </div>
@@ -111,7 +111,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
             <div className="font-display text-white" style={{ fontSize: 15, fontWeight: 700 }}>
               You can free up <span className="font-mono-num">12 GB</span> instantly
             </div>
-            <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "#6b7280" }}>
+            <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#6b7280" }}>
               Duplicates, old files, and large videos detected
             </div>
           </div>
@@ -119,7 +119,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         <button
           onClick={() => onNav("clean")}
           className="shrink-0 text-white"
-          style={{ background: "#4d90fe", borderRadius: 10, padding: "10px 16px", fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 600 }}
+          style={{ background: "#4d90fe", borderRadius: 10, padding: "10px 16px", fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600 }}
         >
           Smart Clean
         </button>
@@ -153,7 +153,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                 <div className="flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44, borderRadius: 999 }}>
                   <I size={18} strokeWidth={1.5} style={{ color: a.color }} />
                 </div>
-                <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "#9ca3af" }}>{a.l}</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#9ca3af" }}>{a.l}</span>
               </button>
             );
           })}
@@ -186,7 +186,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-display font-bold text-white" style={{ fontSize: 14 }}>{x.t}</div>
-                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "#6b7280" }}>{x.s}</div>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#6b7280" }}>{x.s}</div>
                 </div>
                 <span
                   className="font-mono-num"

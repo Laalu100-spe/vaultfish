@@ -64,7 +64,7 @@ function Logo({ size = 20 }: { size?: number }) {
   return (
     <div
       className="flex items-center"
-      style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.02em" }}
+      style={{ fontFamily: '"Inter", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.02em" }}
     >
       <span style={{ fontWeight: 300, color: "rgba(255,255,255,0.9)" }}>Vault</span>
       <span style={{ fontWeight: 700, color: "#4d90fe" }}>Fish</span>
@@ -172,7 +172,7 @@ export function Layout({
               </span>
               <span
                 style={{
-                  fontFamily: '"Plus Jakarta Sans", sans-serif',
+                  fontFamily: '"Inter", sans-serif',
                   fontSize: 10,
                   fontWeight: 500,
                   color: active ? "#4d90fe" : "#6b7280",

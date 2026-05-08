@@ -46,7 +46,7 @@ export function UploadScreen() {
                 <div className="flex justify-between text-xs mb-1">
                   <span className="flex items-center gap-2">
                     <PlatformIcon name={x.n} size={14} />
-                    <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[x.n] }}>{x.n}</span>
+                    <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[x.n] }}>{x.n}</span>
                     <span className="text-muted">2.3 GB / 6.8 GB</span>
                   </span>
                   <span>{x.p}%</span>
