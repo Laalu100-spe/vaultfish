@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, SectionTitle } from "../ui";
+import { SectionTitle } from "../ui";
 import { ChevronDown, Check } from "lucide-react";
 import { DecreasingLinesIcon } from "../PlatformIcons";
 
