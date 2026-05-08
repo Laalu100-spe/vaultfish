@@ -5,10 +5,15 @@ import {
   Layers,
   ArrowUpFromLine,
   TrendingUp,
-  Sparkles,
   SlidersHorizontal,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { DecreasingLinesIcon } from "./PlatformIcons";
+
+function SmartCleanIcon({ size = 18, color = "#6b7280" }: { size?: number; color?: string }) {
+  // 16px mark per spec; in sidebar/tab bar we render at 18 to match other icons visually but using the same construction
+  return <DecreasingLinesIcon size={size} color={color} widths={[size, size * 0.7, size * 0.42]} gap={size * 0.22} thickness={1.5} />;
+}
 
 function MascotFish() {
   return (
