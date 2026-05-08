@@ -103,8 +103,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         }}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(77,144,254,0.18)" }}>
-            <Sparkles size={18} strokeWidth={1.75} style={{ color: "#4d90fe" }} />
+          <div className="flex items-center justify-center shrink-0" style={{ background: "rgba(77,144,254,0.18)", height: 40, width: 40, borderRadius: 10 }}>
+            <Sparkles size={18} strokeWidth={1.5} style={{ color: "#4d90fe" }} />
           </div>
           <div className="min-w-0">
             <div className="font-display text-white" style={{ fontSize: 15, fontWeight: 700 }}>
