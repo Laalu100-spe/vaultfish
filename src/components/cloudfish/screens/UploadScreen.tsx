@@ -77,7 +77,7 @@ export function UploadScreen() {
         ))}
       </Card>
       <button onClick={() => setStage("uploading")} className="w-full py-3.5 rounded-xl bg-[color:var(--accent-blue)] text-white font-medium flex items-center justify-center gap-2">
-        <UploadCloud className="h-4 w-4"/> Start Upload
+        <UploadCloud size={18} strokeWidth={1.5}/> Start Upload
       </button>
     </div>
   );
