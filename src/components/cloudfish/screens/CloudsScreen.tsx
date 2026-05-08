@@ -24,7 +24,7 @@ export function CloudsScreen() {
           <div key={p}>
             <h2 className="flex items-center gap-2 mb-3">
               <PlatformIcon name={p} size={18} />
-              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[p] }}>{p}</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[p] }}>{p}</span>
             </h2>
             <div className="space-y-2">
               {accs.map(a => {

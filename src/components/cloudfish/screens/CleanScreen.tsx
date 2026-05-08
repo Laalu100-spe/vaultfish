@@ -81,17 +81,17 @@ export function CleanScreen() {
           <DecreasingLinesIcon size={36} color="#4d90fe" widths={[32, 22, 14]} gap={7} thickness={1.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 22, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.01em" }}>
+          <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 26, fontWeight: 800, color: "#ffffff", letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>
             12.3 GB to reclaim
           </div>
-          <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
+          <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
             Across all your connected accounts
           </div>
         </div>
         <span
           className="shrink-0"
           style={{
-            fontFamily: '"DM Mono", ui-monospace, monospace',
+            fontFamily: '"Inter Tight", "Inter", sans-serif',
             fontSize: 11,
             color: "#4d90fe",
             background: "rgba(77,144,254,0.10)",
@@ -124,8 +124,8 @@ export function CleanScreen() {
                   <I />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 14, fontWeight: 600, color: "#ffffff" }}>{cat.t}</div>
-                  <div style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.9)" }}>{cat.t}</div>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.35)", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
                     {cat.n} • {cat.s}
                   </div>
                 </div>
@@ -137,7 +137,7 @@ export function CleanScreen() {
                     border: "1px solid rgba(255,255,255,0.08)",
                     borderRadius: 999,
                     padding: "6px 14px",
-                    fontFamily: '"DM Sans", sans-serif',
+                    fontFamily: '"Inter", sans-serif',
                     fontSize: 12,
                     color: "#9ca3af",
                   }}
@@ -168,7 +168,7 @@ export function CleanScreen() {
           background: "#4d90fe",
           borderRadius: 12,
           height: 52,
-          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontFamily: '"Inter", sans-serif',
           fontSize: 15,
           fontWeight: 600,
           letterSpacing: "0.01em",

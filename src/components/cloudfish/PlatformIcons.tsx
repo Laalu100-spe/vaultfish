@@ -43,7 +43,7 @@ export function PlatformIcon({ name, size = 18 }: { name: string; size?: number 
 
 export function PlatformLabel({ name, size = 13 }: { name: string; size?: number }) {
   return (
-    <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: size, fontWeight: 500, color: PLATFORM_COLORS[name] }}>
+    <span style={{ fontFamily: '"Inter", sans-serif', fontSize: size, fontWeight: 500, color: PLATFORM_COLORS[name] }}>
       {name}
     </span>
   );
