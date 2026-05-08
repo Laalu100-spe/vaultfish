@@ -5,10 +5,15 @@ import {
   Layers,
   ArrowUpFromLine,
   TrendingUp,
-  Sparkles,
   SlidersHorizontal,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { DecreasingLinesIcon } from "./PlatformIcons";
+
+function SmartCleanIcon({ size = 18, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
+  const color = (style?.color as string) || "#6b7280";
+  return <DecreasingLinesIcon size={size} color={color} widths={[size, size * 0.7, size * 0.42]} gap={size * 0.22} thickness={1.5} />;
+}
 
 function MascotFish() {
   return (
@@ -51,7 +56,7 @@ const NAV: { id: ScreenId; label: string; icon: any }[] = [
   { id: "clouds", label: "Clouds", icon: Layers },
   { id: "upload", label: "Upload", icon: ArrowUpFromLine },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
-  { id: "clean", label: "Smart Clean", icon: Sparkles },
+  { id: "clean", label: "Smart Clean", icon: SmartCleanIcon },
   { id: "settings", label: "Settings", icon: SlidersHorizontal },
 ];
 

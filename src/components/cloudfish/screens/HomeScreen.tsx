@@ -1,5 +1,6 @@
 import { Card } from "../ui";
 import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, Copy, FileVideo, ChevronRight } from "lucide-react";
+import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 
 const PROVIDER_GRADIENTS: Record<string, string> = {
   "Google Drive": "#4d90fe",
@@ -72,8 +73,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                 <div key={a.name}>
                   <div className="flex justify-between text-sm mb-1.5">
                     <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ background: PROVIDER_COLOR[a.name] }} />
-                      <span className="font-display" style={{ fontWeight: 600 }}>{a.name}</span>
+                      <PlatformIcon name={a.name} size={16} />
+                      <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[a.name] }}>{a.name}</span>
                     </span>
                     <span className="text-muted font-mono-num">{a.used} GB / {a.total} GB</span>
                   </div>
