@@ -49,7 +49,7 @@ export function UploadScreen() {
           </div>
           <div className="mt-6 flex items-center justify-between">
             <div className="text-xs text-muted">Time left: <b className="text-foreground">2m 15s</b></div>
-            <button onClick={() => setStage("idle")} className="px-4 py-2 rounded-lg border border-border text-sm flex items-center gap-2"><Pause className="h-3.5 w-3.5"/> Pause</button>
+            <button onClick={() => setStage("idle")} className="px-4 py-2 rounded-lg border border-border text-sm flex items-center gap-2"><Pause size={18} strokeWidth={1.5}/> Pause</button>
           </div>
         </Card>
       </div>
@@ -60,7 +60,7 @@ export function UploadScreen() {
     <div className="space-y-6">
       <SectionTitle>Upload Files</SectionTitle>
       <Card className="p-10 border-dashed border-2 flex flex-col items-center text-center">
-        <div className="h-14 w-14 rounded-2xl bg-[color:var(--accent-blue)]/15 flex items-center justify-center mb-3"><UploadCloud className="h-7 w-7 text-[color:var(--accent-blue)]"/></div>
+        <div className="flex items-center justify-center mb-3" style={{ background: "rgba(77,144,254,0.15)", height: 56, width: 56, borderRadius: 16 }}><UploadCloud size={18} strokeWidth={1.5} className="text-[color:var(--accent-blue)]"/></div>
         <div className="font-medium">Drag & drop files here</div>
         <div className="text-xs text-muted mt-1">or tap to browse</div>
       </Card>
@@ -77,7 +77,7 @@ export function UploadScreen() {
         ))}
       </Card>
       <button onClick={() => setStage("uploading")} className="w-full py-3.5 rounded-xl bg-[color:var(--accent-blue)] text-white font-medium flex items-center justify-center gap-2">
-        <UploadCloud className="h-4 w-4"/> Start Upload
+        <UploadCloud size={18} strokeWidth={1.5}/> Start Upload
       </button>
     </div>
   );

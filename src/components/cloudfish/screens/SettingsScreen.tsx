@@ -20,7 +20,7 @@ export function SettingsScreen() {
                 <div className="text-xs text-muted truncate">{a.email}</div>
               </div>
               <div className="text-xs text-muted">{a.used}/{a.total} GB</div>
-              <ChevronRight className="h-4 w-4 text-muted"/>
+              <ChevronRight size={18} strokeWidth={1.5} className="text-muted"/>
             </div>
           ))}
           <button className="w-full p-4 text-sm text-[color:var(--accent-blue)] text-left">+ Add Another Cloud</button>
@@ -40,7 +40,7 @@ export function SettingsScreen() {
           ].map(r => (
             <button key={r.l} className="w-full p-4 flex items-center justify-between text-left hover:bg-background/50">
               <div><div className="text-sm font-medium">{r.l}</div><div className="text-xs text-muted">{r.d}</div></div>
-              <ChevronRight className="h-4 w-4 text-muted"/>
+              <ChevronRight size={18} strokeWidth={1.5} className="text-muted"/>
             </button>
           ))}
         </Card>

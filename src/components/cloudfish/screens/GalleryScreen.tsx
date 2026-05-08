@@ -39,10 +39,10 @@ export function GalleryScreen() {
       <div className="columns-2 md:columns-3 gap-3 [column-fill:_balance]">
         {visible.map((it, i) => (
           <div key={i} className="mb-3 break-inside-avoid relative rounded-xl overflow-hidden border border-border" style={{ background: it.g, height: it.h }}>
-            <div className="absolute top-2 left-2 h-6 w-6 rounded-full bg-black/40 backdrop-blur flex items-center justify-center"><Cloud className="h-3 w-3 text-white" /></div>
+            <div className="absolute top-2 left-2 h-6 w-6 rounded-full bg-black/40 backdrop-blur flex items-center justify-center"><Cloud size={12} strokeWidth={1.5} className="text-white" /></div>
             {it.video && (
               <>
-                <div className="absolute inset-0 flex items-center justify-center"><div className="h-10 w-10 rounded-full bg-black/40 flex items-center justify-center"><Play className="h-5 w-5 text-white" /></div></div>
+                <div className="absolute inset-0 flex items-center justify-center"><div className="h-10 w-10 rounded-full bg-black/40 flex items-center justify-center"><Play size={18} strokeWidth={1.5} className="text-white" /></div></div>
                 <div className="absolute bottom-2 right-2 text-[10px] font-medium text-white bg-black/50 px-1.5 py-0.5 rounded">{it.dur}</div>
               </>
             )}

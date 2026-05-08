@@ -30,7 +30,7 @@ export function FilesScreen() {
                 <span>{file.time}</span>
               </div>
             </div>
-            <button className="p-2 text-muted hover:text-foreground"><MoreVertical className="h-4 w-4" /></button>
+            <button className="p-2 text-muted hover:text-foreground"><MoreVertical size={18} strokeWidth={1.5} /></button>
           </Card>
         ))}
         {visible.length === 0 && <div className="text-center text-muted py-12 text-sm">No files for this filter.</div>}

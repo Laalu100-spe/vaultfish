@@ -63,7 +63,7 @@ export function AnalyticsScreen() {
         <div className="text-xs uppercase tracking-wider text-muted mb-2">Recommendations</div>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl gradient-brand flex items-center justify-center text-white"><ArrowRight className="h-5 w-5"/></div>
+            <div className="flex items-center justify-center text-white" style={{ background: "linear-gradient(135deg, #4d90fe 0%, #6366f1 100%)", height: 40, width: 40, borderRadius: 10 }}><ArrowRight size={18} strokeWidth={1.5} /></div>
             <div>
               <div className="text-sm font-medium">Move 4 GB to Dropbox</div>
               <div className="text-xs text-muted">Balance your storage</div>

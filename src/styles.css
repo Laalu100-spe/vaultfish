@@ -170,45 +170,18 @@
   position: absolute;
   bottom: 64px;
   right: 16px;
-  width: 36px;
-  height: 24px;
+  width: 44px;
+  height: 28px;
   z-index: 2;
   pointer-events: none;
   animation: fishFloat 3s ease-in-out infinite;
   transform-origin: center;
   will-change: transform;
+  filter: drop-shadow(0 8px 16px rgba(77,144,254,0.25));
 }
 .mascot-fish svg { display: block; }
-.mascot-shadow {
-  position: absolute;
-  left: 50%;
-  bottom: -8px;
-  width: 20px;
-  height: 4px;
-  margin-left: -10px;
-  background: rgba(77,144,254,0.3);
-  border-radius: 9999px;
-  filter: blur(8px);
-  transform-origin: center;
-  animation: fishShadow 3s ease-in-out infinite;
-  will-change: transform;
-}
 @keyframes fishFloat {
-  0%   { transform: translateY(0) rotate(-2deg); }
-  50%  { transform: translateY(-6px) rotate(2deg); }
-  100% { transform: translateY(0) rotate(-2deg); }
-}
-@keyframes fishShadow {
-  0%   { transform: scaleX(1); opacity: 0.6; }
-  50%  { transform: scaleX(0.7); opacity: 0.9; }
-  100% { transform: scaleX(1); opacity: 0.6; }
-}
-.mascot-fish.jumping {
-  animation: fishJump 0.5s cubic-bezier(.34,1.56,.64,1) forwards;
-}
-@keyframes fishJump {
-  0%   { transform: translateY(0) scale(1); }
-  40%  { transform: translateY(-40px) scale(1.2); }
-  75%  { transform: translateY(4px) scale(0.95); }
-  100% { transform: translateY(0) scale(1); }
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
 }

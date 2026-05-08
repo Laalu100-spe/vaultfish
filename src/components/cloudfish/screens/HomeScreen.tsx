@@ -1,5 +1,5 @@
 import { Card } from "../ui";
-import { Upload, ScanLine, Trash2, LayoutGrid, Sparkles, Image as ImageIcon, Video, ChevronRight } from "lucide-react";
+import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, Copy, FileVideo, ChevronRight } from "lucide-react";
 
 const PROVIDER_GRADIENTS: Record<string, string> = {
   "Google Drive": "#4d90fe",
@@ -32,10 +32,10 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
   ];
 
   const quickActions = [
-    { i: Upload, l: "Upload", to: "upload", color: "#4d90fe", bg: "rgba(77,144,254,0.12)" },
-    { i: ScanLine, l: "Scan Files", to: "files", color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
-    { i: Trash2, l: "Clean Duplicates", to: "clean", color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-    { i: LayoutGrid, l: "Smart Organize", to: "clean", color: "#2dd4bf", bg: "rgba(45,212,191,0.12)" },
+    { i: ArrowUpFromLine, l: "Upload", to: "upload", color: "#4d90fe", bg: "rgba(77,144,254,0.12)" },
+    { i: ScanLine, l: "Scan Files", to: "files", color: "#a78bfa", bg: "rgba(139,92,246,0.12)" },
+    { i: GitMerge, l: "Clean Duplicates", to: "clean", color: "#f87171", bg: "rgba(239,68,68,0.12)" },
+    { i: LayoutDashboard, l: "Smart Organize", to: "clean", color: "#2dd4bf", bg: "rgba(20,184,166,0.12)" },
   ];
 
   return (
@@ -103,8 +103,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         }}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(77,144,254,0.18)" }}>
-            <Sparkles size={18} strokeWidth={1.75} style={{ color: "#4d90fe" }} />
+          <div className="flex items-center justify-center shrink-0" style={{ background: "rgba(77,144,254,0.18)", height: 40, width: 40, borderRadius: 10 }}>
+            <Sparkles size={18} strokeWidth={1.5} style={{ color: "#4d90fe" }} />
           </div>
           <div className="min-w-0">
             <div className="font-display text-white" style={{ fontSize: 15, fontWeight: 700 }}>
@@ -149,8 +149,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
                 }}
               >
-                <div className="rounded-full flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44 }}>
-                  <I size={20} strokeWidth={1.75} style={{ color: a.color }} />
+                <div className="flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44, borderRadius: 999 }}>
+                  <I size={18} strokeWidth={1.5} style={{ color: a.color }} />
                 </div>
                 <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "#9ca3af" }}>{a.l}</span>
               </button>
@@ -163,8 +163,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         <SectionLabel>Smart Insights</SectionLabel>
         <div className="space-y-2.5">
           {[
-            { i: ImageIcon, t: "Duplicate photos found", s: "You have 1,247 duplicates", v: "7.4 GB", c: "#f59e0b" },
-            { i: Video, t: "Large videos taking space", s: "Review and clean", v: "4.6 GB", c: "#ef4444" },
+            { i: Copy, t: "Duplicate photos found", s: "You have 1,247 duplicates", v: "7.4 GB", c: "#a78bfa" },
+            { i: FileVideo, t: "Large videos taking space", s: "Review and clean", v: "4.6 GB", c: "#fb923c" },
           ].map(x => {
             const I = x.i;
             return (
@@ -180,8 +180,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   padding: "18px 20px",
                 }}
               >
-                <div className="rounded-full flex items-center justify-center shrink-0" style={{ background: `color-mix(in oklab, ${x.c} 18%, transparent)`, height: 40, width: 40 }}>
-                  <I size={18} strokeWidth={1.75} style={{ color: x.c }} />
+                <div className="flex items-center justify-center shrink-0" style={{ background: `color-mix(in oklab, ${x.c} 18%, transparent)`, height: 40, width: 40, borderRadius: 10 }}>
+                  <I size={18} strokeWidth={1.5} style={{ color: x.c }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-display font-bold text-white" style={{ fontSize: 14 }}>{x.t}</div>

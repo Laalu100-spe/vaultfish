@@ -39,13 +39,13 @@ export function CloudsScreen() {
                       </div>
                     </div>
                     <button onClick={() => setModal({ id: a.id, email: a.email, gb: a.used })} className="p-2 rounded-lg hover:bg-background text-muted hover:text-foreground">
-                      <X className="h-4 w-4" />
+                      <X size={18} strokeWidth={1.5} />
                     </button>
                   </Card>
                 );
               })}
               <button className="w-full border-2 border-dashed border-border rounded-2xl py-3 text-sm text-muted hover:text-foreground hover:border-[color:var(--accent-blue)] transition-colors flex items-center justify-center gap-2">
-                <Plus className="h-4 w-4" /> Add another {p}
+                <Plus size={18} strokeWidth={1.5} /> Add another {p}
               </button>
             </div>
           </div>
@@ -58,7 +58,7 @@ export function CloudsScreen() {
             <h3 className="text-lg font-semibold">Disconnect account?</h3>
             <p className="text-sm text-muted mt-1">{modal.email}</p>
             <div className="mt-4 p-3 rounded-xl bg-[color:var(--color-amber)]/10 border border-[color:var(--color-amber)]/30 flex gap-2 text-sm">
-              <AlertTriangle className="h-5 w-5 text-[color:var(--color-amber)] shrink-0" />
+              <AlertTriangle size={18} strokeWidth={1.5} className="text-[color:var(--color-amber)] shrink-0" />
               <span><b>{modal.gb} GB</b> of data on this account. Choose what to do with the files.</span>
             </div>
             <div className="mt-4 space-y-2">
