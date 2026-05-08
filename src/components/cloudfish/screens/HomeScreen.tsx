@@ -1,5 +1,5 @@
 import { Card } from "../ui";
-import { Upload, ScanLine, Trash2, LayoutGrid, Sparkles, Image as ImageIcon, Video, ChevronRight } from "lucide-react";
+import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, Copy, FileVideo, ChevronRight } from "lucide-react";
 
 const PROVIDER_GRADIENTS: Record<string, string> = {
   "Google Drive": "#4d90fe",
