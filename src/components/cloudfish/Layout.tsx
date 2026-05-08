@@ -1,22 +1,43 @@
-import { Home, Images, FolderOpen, Cloud, BarChart3, Sparkles, Settings2, Upload } from "lucide-react";
+import {
+  House,
+  GalleryHorizontalEnd,
+  Files,
+  Layers,
+  ArrowUpFromLine,
+  TrendingUp,
+  Sparkles,
+  SlidersHorizontal,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 function MascotFish() {
   return (
     <div className="mascot-fish" aria-hidden>
-      <svg width="36" height="24" viewBox="0 0 36 24" fill="none">
+      <svg width="44" height="28" viewBox="0 0 44 28" fill="none">
         <defs>
-          <linearGradient id="fishBody" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id="vfFishBody" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#4d90fe" />
-            <stop offset="100%" stopColor="#8ab4ff" />
+            <stop offset="50%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#93c5fd" />
+          </linearGradient>
+          <linearGradient id="vfFishBelly" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+            <stop offset="50%" stopColor="rgba(255,255,255,0.22)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
           </linearGradient>
         </defs>
-        <ellipse cx="14" cy="12" rx="12" ry="7" fill="url(#fishBody)" />
-        <path d="M26 12 L34 6 L31 12 L34 18 Z" fill="url(#fishBody)" />
-        <circle cx="20" cy="10" r="1.6" fill="#ffffff" />
-        <circle cx="20.4" cy="10" r="0.6" fill="#060810" />
+        {/* Body */}
+        <ellipse cx="17" cy="14" rx="15" ry="8.5" fill="url(#vfFishBody)" />
+        {/* Belly streak */}
+        <ellipse cx="17" cy="15.5" rx="11" ry="2.2" fill="url(#vfFishBelly)" />
+        {/* Tail — two curved fins */}
+        <path d="M30 14 C34 10, 38 8, 42 6 C40 10, 40 18, 42 22 C38 20, 34 18, 30 14 Z" fill="url(#vfFishBody)" />
+        {/* Pectoral fin */}
+        <path d="M16 16 C14 19, 12 20, 10 20 C11 18, 12 17, 14 15.5 Z" fill="url(#vfFishBody)" opacity="0.85" />
+        {/* Eye */}
+        <circle cx="22" cy="12" r="1.8" fill="#ffffff" />
+        <circle cx="22.3" cy="12" r="0.9" fill="#0b1020" />
       </svg>
-      <span className="mascot-shadow" />
     </div>
   );
 }
@@ -24,34 +45,24 @@ function MascotFish() {
 export type ScreenId = "home" | "gallery" | "files" | "clouds" | "upload" | "analytics" | "clean" | "settings";
 
 const NAV: { id: ScreenId; label: string; icon: any }[] = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "gallery", label: "Gallery", icon: Images },
-  { id: "files", label: "Files", icon: FolderOpen },
-  { id: "clouds", label: "Clouds", icon: Cloud },
-  { id: "upload", label: "Upload", icon: Upload },
-  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "home", label: "Home", icon: House },
+  { id: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
+  { id: "files", label: "Files", icon: Files },
+  { id: "clouds", label: "Clouds", icon: Layers },
+  { id: "upload", label: "Upload", icon: ArrowUpFromLine },
+  { id: "analytics", label: "Analytics", icon: TrendingUp },
   { id: "clean", label: "Smart Clean", icon: Sparkles },
-  { id: "settings", label: "Settings", icon: Settings2 },
+  { id: "settings", label: "Settings", icon: SlidersHorizontal },
 ];
 
-function FishIcon({ size = 20 }: { size?: number }) {
+function Logo({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden>
-      <path
-        d="M3 10 C3 6.5, 7 4, 11 4 C14.5 4, 17 6.5, 17 10 C17 13.5, 14.5 16, 11 16 C7 16, 3 13.5, 3 10 Z"
-        fill="#4d90fe"
-      />
-      <path d="M16 10 L20 6 L20 14 Z" fill="#4d90fe" />
-      <circle cx="13" cy="9" r="1" fill="#060810" />
-    </svg>
-  );
-}
-
-function Logo({ size = 22 }: { size?: number }) {
-  return (
-    <div className="flex items-center gap-2 font-display" style={{ fontSize: size, fontWeight: 700, lineHeight: 1, letterSpacing: "-0.015em" }}>
-      <FishIcon size={size} />
-      <span><span style={{ color: "#ffffff" }}>Vault</span><span style={{ color: "#4d90fe" }}>Fish</span></span>
+    <div
+      className="flex items-center"
+      style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.02em" }}
+    >
+      <span style={{ fontWeight: 300, color: "rgba(255,255,255,0.9)" }}>Vault</span>
+      <span style={{ fontWeight: 700, color: "#4d90fe" }}>Fish</span>
     </div>
   );
 }
@@ -65,6 +76,8 @@ export function Layout({
   onNavigate: (id: ScreenId) => void;
   children: ReactNode;
 }) {
+  const mobileNav = NAV.filter((n) => ["home", "gallery", "files", "analytics", "settings"].includes(n.id));
+
   return (
     <div className="min-h-screen flex bg-background text-foreground app-bg">
       <div aria-hidden className="mesh-layer mesh-1" />
@@ -74,7 +87,7 @@ export function Layout({
 
       <aside className="hidden md:flex w-64 shrink-0 flex-col p-4 sticky top-0 h-screen sidebar-surface z-10 relative">
         <div className="logo-glow flex items-center px-2 py-3 mb-4">
-          <Logo size={22} />
+          <Logo size={20} />
         </div>
         <nav className="flex flex-col gap-1">
           {NAV.map((n) => {
@@ -83,24 +96,21 @@ export function Layout({
             return (
               <button
                 key={n.id}
-                onClick={() => {
-                  onNavigate(n.id);
-                  const el = document.querySelector(".mascot-fish");
-                  if (el) {
-                    el.classList.remove("jumping");
-                    void (el as HTMLElement).offsetWidth;
-                    el.classList.add("jumping");
-                    setTimeout(() => el.classList.remove("jumping"), 500);
-                  }
+                onClick={() => onNavigate(n.id)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-display transition-colors"
+                style={{
+                  background: active ? "rgba(77,144,254,0.10)" : "transparent",
+                  color: active ? "#4d90fe" : "#6b7280",
+                  fontWeight: active ? 600 : 500,
                 }}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-display transition-colors ${
-                  active
-                    ? "nav-active"
-                    : "text-muted hover:text-foreground hover:bg-white/5"
-                }`}
-                style={active ? { paddingLeft: "calc(0.75rem - 2px)", fontWeight: 700 } : { fontWeight: 600 }}
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.color = "#e5e7eb";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.color = "#6b7280";
+                }}
               >
-                <Icon size={18} strokeWidth={1.5} />
+                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "#6b7280" }} />
                 {n.label}
               </button>
             );
@@ -135,30 +145,35 @@ export function Layout({
           height: 64,
         }}
       >
-        {NAV.filter(n => ["home","gallery","files","analytics","settings"].includes(n.id)).map((n) => {
+        {mobileNav.map((n) => {
           const Icon = n.icon;
           const active = current === n.id;
           return (
             <button
               key={n.id}
               onClick={() => onNavigate(n.id)}
-              className="relative flex items-center justify-center"
+              className="relative flex flex-col items-center justify-center gap-1"
             >
               <span
-                className="flex items-center gap-1.5 transition-all"
+                className="flex items-center justify-center"
                 style={{
-                  color: active ? "#4d90fe" : "#6b7280",
-                  background: active ? "rgba(77,144,254,0.12)" : "transparent",
+                  width: 32,
+                  height: 32,
                   borderRadius: 999,
-                  padding: active ? "6px 14px" : "6px 10px",
+                  background: active ? "rgba(77,144,254,0.15)" : "transparent",
                 }}
               >
-                <Icon size={20} strokeWidth={1.75} />
-                {active && (
-                  <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 12, fontWeight: 600 }}>
-                    {n.label}
-                  </span>
-                )}
+                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "#6b7280" }} />
+              </span>
+              <span
+                style={{
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: active ? "#4d90fe" : "#6b7280",
+                }}
+              >
+                {n.label}
               </span>
             </button>
           );
