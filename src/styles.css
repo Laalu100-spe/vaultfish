@@ -185,3 +185,7 @@
   50%  { transform: translateY(-8px); }
   100% { transform: translateY(0); }
 }
+
+/* ===== Smart Clean ===== */
+.clean-row:hover { background: rgba(255,255,255,0.04) !important; }
+.clean-all-btn:hover { background: #5a9eff !important; box-shadow: 0 0 40px rgba(77,144,254,0.45) !important; }
