@@ -146,7 +146,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                 <div className="flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44, borderRadius: 999 }}>
                   <I size={18} strokeWidth={1.5} style={{ color: a.color }} />
                 </div>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#9ca3af" }}>{a.l}</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.7)" }}>{a.l}</span>
               </button>
             );
           })}
