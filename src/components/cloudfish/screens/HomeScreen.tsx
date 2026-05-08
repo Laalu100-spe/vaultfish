@@ -149,8 +149,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
                 }}
               >
-                <div className="rounded-full flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44 }}>
-                  <I size={20} strokeWidth={1.75} style={{ color: a.color }} />
+                <div className="flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44, borderRadius: 999 }}>
+                  <I size={18} strokeWidth={1.5} style={{ color: a.color }} />
                 </div>
                 <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: 12, color: "#9ca3af" }}>{a.l}</span>
               </button>
