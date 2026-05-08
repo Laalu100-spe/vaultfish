@@ -202,3 +202,117 @@
 /* ===== Smart Clean ===== */
 .clean-row:hover { background: rgba(255,255,255,0.04) !important; }
 .clean-all-btn:hover { background: #5a9eff !important; box-shadow: 0 0 40px rgba(77,144,254,0.45) !important; }
+
+/* ===== Clean All animation ===== */
+@keyframes rowSweep {
+  0%   { transform: translateX(0); opacity: 1; }
+  60%  { transform: translateX(20px); opacity: 0.6; }
+  100% { transform: translateX(40px); opacity: 0; }
+}
+.row-sweep {
+  animation: rowSweep 320ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+.row-fish {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-30px, -50%);
+  animation: rowFish 360ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 2;
+}
+@keyframes rowFish {
+  0%   { transform: translate(-30px, -50%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translate(calc(100vw + 30px), -50%); opacity: 0; }
+}
+
+.trash-anim-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 50;
+  perspective: 600px;
+}
+.trash-anim {
+  position: relative;
+  width: 48px;
+  height: 56px;
+  opacity: 0;
+  animation: trashIn 200ms ease-out 400ms forwards, trashJiggle 600ms ease-in-out 760ms;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+@keyframes trashIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes trashJiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+  75% { transform: rotate(-2deg); }
+}
+.trash-lid {
+  transform-box: fill-box;
+  animation: lidOpen 200ms ease 500ms forwards, lidShut 150ms ease 1000ms forwards;
+  will-change: transform;
+}
+@keyframes lidOpen {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-40deg); }
+}
+@keyframes lidShut {
+  from { transform: rotate(-40deg); }
+  to   { transform: rotate(0deg); }
+}
+.falling-fish {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+@keyframes fishFall {
+  0%   { transform: translate(-50%, -80px) rotate(-10deg); opacity: 0; }
+  10%  { opacity: 1; }
+  60%  { transform: translate(-30%, 0px) rotate(20deg); opacity: 1; }
+  100% { transform: translate(-50%, 24px) rotate(40deg); opacity: 0; }
+}
+.ff-0 { animation: fishFall 280ms cubic-bezier(0.4, 0, 0.2, 1) 700ms forwards; }
+.ff-1 { animation: fishFall 280ms cubic-bezier(0.4, 0, 0.2, 1) 760ms forwards; }
+.ff-2 { animation: fishFall 280ms cubic-bezier(0.4, 0, 0.2, 1) 820ms forwards; }
+
+.burst-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #4d90fe;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+@keyframes burst {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(var(--bx, 0), var(--by, 0)) scale(1); opacity: 0; }
+}
+.bd-0 { --bx: 22px;  --by: -50%; animation: burst 300ms ease-out 1000ms forwards; }
+.bd-1 { --bx: 12px;  --by: -28px; animation: burst 300ms ease-out 1000ms forwards; }
+.bd-2 { --bx: -32px; --by: -38px; animation: burst 300ms ease-out 1000ms forwards; }
+.bd-3 { --bx: -38px; --by: -50%;  animation: burst 300ms ease-out 1000ms forwards; }
+.bd-4 { --bx: -18px; --by: -72px; animation: burst 300ms ease-out 1000ms forwards; }
+.bd-5 { --bx: 28px;  --by: -78px; animation: burst 300ms ease-out 1000ms forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .row-sweep, .row-fish, .trash-anim, .trash-lid, .falling-fish, .burst-dot {
+    animation: none !important;
+  }
+}
