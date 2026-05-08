@@ -318,3 +318,10 @@
 }
 
 .file-menu-item:hover { background: rgba(255,255,255,0.05); }
+
+.file-row { transition: background 150ms ease; }
+.file-row:hover { background: rgba(255,255,255,0.03); }
+
+@keyframes previewFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes previewIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes listFade { from { opacity: 0; } to { opacity: 1; } }
