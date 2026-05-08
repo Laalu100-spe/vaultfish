@@ -60,7 +60,7 @@ export function UploadScreen() {
     <div className="space-y-6">
       <SectionTitle>Upload Files</SectionTitle>
       <Card className="p-10 border-dashed border-2 flex flex-col items-center text-center">
-        <div className="h-14 w-14 rounded-2xl bg-[color:var(--accent-blue)]/15 flex items-center justify-center mb-3"><UploadCloud className="h-7 w-7 text-[color:var(--accent-blue)]"/></div>
+        <div className="flex items-center justify-center mb-3" style={{ background: "rgba(77,144,254,0.15)", height: 56, width: 56, borderRadius: 16 }}><UploadCloud size={18} strokeWidth={1.5} className="text-[color:var(--accent-blue)]" style={{ width: 28, height: 28 }}/></div>
         <div className="font-medium">Drag & drop files here</div>
         <div className="text-xs text-muted mt-1">or tap to browse</div>
       </Card>
