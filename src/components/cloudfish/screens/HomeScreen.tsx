@@ -15,14 +15,7 @@ const PROVIDER_COLOR: Record<string, string> = {
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h2
-      className="font-mono-num"
-      style={{ fontSize: 10, letterSpacing: "0.15em", color: "#374151", textTransform: "uppercase", marginBottom: 12, fontWeight: 500 }}
-    >
-      {children}
-    </h2>
-  );
+  return <h2 className="section-label" style={{ marginBottom: 12 }}>{children}</h2>;
 }
 
 export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
