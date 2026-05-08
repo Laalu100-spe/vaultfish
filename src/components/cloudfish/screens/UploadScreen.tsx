@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, SectionTitle, Toggle } from "../ui";
 import { UploadCloud, Pause } from "lucide-react";
+import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 
 export function UploadScreen() {
   const [stage, setStage] = useState<"idle"|"uploading">("idle");
