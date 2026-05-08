@@ -39,7 +39,7 @@ export function CloudsScreen() {
                       </div>
                     </div>
                     <button onClick={() => setModal({ id: a.id, email: a.email, gb: a.used })} className="p-2 rounded-lg hover:bg-background text-muted hover:text-foreground">
-                      <X className="h-4 w-4" />
+                      <X size={18} strokeWidth={1.5} />
                     </button>
                   </Card>
                 );
