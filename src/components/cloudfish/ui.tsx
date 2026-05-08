@@ -36,13 +36,35 @@ export function Bar({
   );
 }
 
-export function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+export function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <button
-      onClick={() => onChange(!on)}
-      className={`relative h-6 w-11 rounded-full transition-colors ${on ? "bg-[color:var(--accent-blue)]" : "bg-[color:var(--border)]"}`}
+      onClick={() => !disabled && onChange(!on)}
+      disabled={disabled}
+      style={{
+        position: "relative",
+        height: 24,
+        width: 42,
+        borderRadius: 999,
+        background: on ? "#4d90fe" : "rgba(255,255,255,0.1)",
+        transition: "background 200ms ease",
+        opacity: disabled ? 0.6 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
     >
-      <span className={`absolute top-0.5 ${on ? "left-5" : "left-0.5"} h-5 w-5 rounded-full bg-white transition-all`} />
+      <span
+        style={{
+          position: "absolute",
+          top: 2,
+          left: on ? 20 : 2,
+          height: 20,
+          width: 20,
+          borderRadius: 999,
+          background: "#fff",
+          transition: "left 200ms ease",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        }}
+      />
     </button>
   );
 }
