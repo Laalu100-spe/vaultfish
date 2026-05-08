@@ -1,5 +1,6 @@
 import { Card } from "../ui";
 import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, Copy, FileVideo, ChevronRight } from "lucide-react";
+import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 
 const PROVIDER_GRADIENTS: Record<string, string> = {
   "Google Drive": "#4d90fe",
