@@ -38,13 +38,20 @@ export function UploadScreen() {
           <div className="mt-6 space-y-3">
             <div className="text-xs text-muted">Uploading to</div>
             {[
-              { n: "Google Drive", p: 34, c: "#4285f4" },
-              { n: "Dropbox", p: 34, c: "#ec4899" },
-              { n: "OneDrive", p: 32, c: "#14b8a6" },
+              { n: "Google Drive", p: 34 },
+              { n: "Dropbox", p: 34 },
+              { n: "OneDrive", p: 32 },
             ].map(x => (
               <div key={x.n}>
-                <div className="flex justify-between text-xs mb-1"><span>{x.n} <span className="text-muted">2.3 GB / 6.8 GB</span></span><span>{x.p}%</span></div>
-                <div className="h-1.5 bg-background rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${x.p}%`, background: x.c }} /></div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="flex items-center gap-2">
+                    <PlatformIcon name={x.n} size={14} />
+                    <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[x.n] }}>{x.n}</span>
+                    <span className="text-muted">2.3 GB / 6.8 GB</span>
+                  </span>
+                  <span>{x.p}%</span>
+                </div>
+                <div className="h-1.5 bg-background rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${x.p}%`, background: PLATFORM_COLORS[x.n] }} /></div>
               </div>
             ))}
           </div>
