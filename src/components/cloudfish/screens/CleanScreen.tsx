@@ -43,9 +43,60 @@ const CATS = [
   { id: "ss", t: "Screenshots", n: "892 files", s: "1.2 GB", I: ScreenshotIcon, files: ["Screenshot 2025-03-12.png","Screenshot 2025-03-13.png","Screenshot 2025-03-14.png"] },
 ];
 
+function FishGlyph({ size = 14, color = "#4d90fe" }: { size?: number; color?: string }) {
+  const w = size;
+  const h = Math.round(size * (12 / 18));
+  return (
+    <svg width={w} height={h} viewBox="0 0 18 12" fill="none" aria-hidden>
+      <path d="M2 6 C2 3 5 1.5 8.5 1.5 C12 1.5 14 3.5 14.5 6 C14 8.5 12 10.5 8.5 10.5 C5 10.5 2 9 2 6 Z" fill={color} />
+      <path d="M14.5 6 L17.5 3 L17.5 9 Z" fill={color} />
+      <circle cx="6" cy="5.2" r="0.6" fill="#0b1020" />
+    </svg>
+  );
+}
+
+function TrashAnimation() {
+  return (
+    <div className="trash-anim-wrap" aria-hidden>
+      <div className="trash-anim">
+        <svg width={48} height={56} viewBox="0 0 48 56" fill="none">
+          <g className="trash-lid" style={{ transformOrigin: "24px 12px" }}>
+            <path d="M6 12 H42" stroke="#4d90fe" strokeWidth={1.5} strokeLinecap="round" />
+            <path d="M19 8 H29 V12 H19 Z" stroke="#4d90fe" strokeWidth={1.5} strokeLinejoin="round" fill="none" />
+          </g>
+          <path d="M9 14 L11 52 H37 L39 14" stroke="#4d90fe" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" fill="none" />
+          <path d="M18 22 V44 M24 22 V44 M30 22 V44" stroke="#4d90fe" strokeWidth={1.5} strokeLinecap="round" />
+        </svg>
+        {[14, 12, 10].map((sz, i) => (
+          <span key={i} className={`falling-fish ff-${i}`}>
+            <FishGlyph size={sz} />
+          </span>
+        ))}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <span key={i} className={`burst-dot bd-${i}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function CleanScreen() {
   const [open, setOpen] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
+
+  const startClean = () => {
+    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setDone(true);
+      return;
+    }
+    setCleaning(true);
+    window.setTimeout(() => {
+      setCleaning(false);
+      setDone(true);
+    }, 1300);
+  };
 
   if (done) {
     return (
