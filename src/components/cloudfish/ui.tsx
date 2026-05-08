@@ -9,8 +9,8 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
 export function SectionTitle({ children, sub }: { children: ReactNode; sub?: string }) {
   return (
     <div className="mb-4">
-      <h1 className="text-2xl md:text-3xl font-display font-bold tracking-tight">{children}</h1>
-      {sub && <p className="text-sm text-muted mt-1">{sub}</p>}
+      <h1 style={{ fontFamily: '"Inter", sans-serif', fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", color: "rgba(255,255,255,0.95)" }}>{children}</h1>
+      {sub && <p style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{sub}</p>}
     </div>
   );
 }
