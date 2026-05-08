@@ -178,18 +178,19 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   <I size={18} strokeWidth={1.5} style={{ color: x.c }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-display font-bold text-white" style={{ fontSize: 14 }}>{x.t}</div>
-                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#6b7280" }}>{x.s}</div>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.9)" }}>{x.t}</div>
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.35)" }}>{x.s}</div>
                 </div>
                 <span
-                  className="font-mono-num"
                   style={{
+                    fontFamily: '"Inter Tight", "Inter", sans-serif',
+                    fontVariantNumeric: "tabular-nums",
                     background: `color-mix(in oklab, ${x.c} 18%, transparent)`,
-                    color: x.c,
+                    color: "#ffffff",
                     fontSize: 12,
                     padding: "4px 10px",
                     borderRadius: 999,
-                    fontWeight: 500,
+                    fontWeight: 700,
                   }}
                 >
                   {x.v}
