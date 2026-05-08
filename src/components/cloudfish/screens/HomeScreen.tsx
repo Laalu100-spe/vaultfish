@@ -180,8 +180,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   padding: "18px 20px",
                 }}
               >
-                <div className="rounded-full flex items-center justify-center shrink-0" style={{ background: `color-mix(in oklab, ${x.c} 18%, transparent)`, height: 40, width: 40 }}>
-                  <I size={18} strokeWidth={1.75} style={{ color: x.c }} />
+                <div className="flex items-center justify-center shrink-0" style={{ background: `color-mix(in oklab, ${x.c} 18%, transparent)`, height: 40, width: 40, borderRadius: 10 }}>
+                  <I size={18} strokeWidth={1.5} style={{ color: x.c }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-display font-bold text-white" style={{ fontSize: 14 }}>{x.t}</div>
