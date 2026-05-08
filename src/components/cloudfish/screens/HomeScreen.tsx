@@ -101,10 +101,10 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
             <Sparkles size={18} strokeWidth={1.5} style={{ color: "#4d90fe" }} />
           </div>
           <div className="min-w-0">
-            <div className="font-display text-white" style={{ fontSize: 15, fontWeight: 700 }}>
-              You can free up <span className="font-mono-num">12 GB</span> instantly
+            <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.9)" }}>
+              You can free up <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>12 GB</span> instantly
             </div>
-            <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: "#6b7280" }}>
+            <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.35)" }}>
               Duplicates, old files, and large videos detected
             </div>
           </div>
@@ -112,7 +112,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         <button
           onClick={() => onNav("clean")}
           className="shrink-0 text-white"
-          style={{ background: "#4d90fe", borderRadius: 10, padding: "10px 16px", fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600 }}
+          style={{ background: "#4d90fe", borderRadius: 10, padding: "10px 16px", fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, letterSpacing: "0.01em" }}
         >
           Smart Clean
         </button>
