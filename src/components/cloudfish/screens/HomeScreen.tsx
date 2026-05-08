@@ -64,18 +64,18 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
               const pct = Math.round((a.used/a.total)*100);
               return (
                 <div key={a.name}>
-                  <div className="flex justify-between text-sm mb-1.5">
+                  <div className="flex justify-between mb-1.5">
                     <span className="flex items-center gap-2">
                       <PlatformIcon name={a.name} size={16} />
-                      <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[a.name] }}>{a.name}</span>
+                      <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em", color: PLATFORM_COLORS[a.name] }}>{a.name}</span>
                     </span>
-                    <span className="text-muted font-mono-num">{a.used} GB / {a.total} GB</span>
+                    <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "rgba(255,255,255,0.5)" }}>{a.used} GB / {a.total} GB</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <StorageBar pct={pct} fill={PROVIDER_GRADIENTS[a.name]} dotColor={PROVIDER_COLOR[a.name]} />
                     </div>
-                    <span className="text-xs font-mono-num w-10 text-right" style={{ color: PROVIDER_COLOR[a.name] }}>{pct}%</span>
+                    <span className="w-10 text-right" style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 12, fontWeight: 700, fontVariantNumeric: "tabular-nums", color: PROVIDER_COLOR[a.name] }}>{pct}%</span>
                   </div>
                 </div>
               );
