@@ -81,10 +81,10 @@ export function CleanScreen() {
           <DecreasingLinesIcon size={36} color="#4d90fe" widths={[32, 22, 14]} gap={7} thickness={1.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 22, fontWeight: 700, color: "#ffffff", letterSpacing: "-0.01em" }}>
+          <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 26, fontWeight: 800, color: "#ffffff", letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>
             12.3 GB to reclaim
           </div>
-          <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
+          <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.4)", marginTop: 4 }}>
             Across all your connected accounts
           </div>
         </div>
