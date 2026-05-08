@@ -22,14 +22,17 @@ export function CloudsScreen() {
         const accs = ACCOUNTS.filter(a => a.platform === p);
         return (
           <div key={p}>
-            <h2 className="text-sm uppercase tracking-wider text-muted mb-3">{p}</h2>
+            <h2 className="flex items-center gap-2 mb-3">
+              <PlatformIcon name={p} size={18} />
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: 13, fontWeight: 500, color: PLATFORM_COLORS[p] }}>{p}</span>
+            </h2>
             <div className="space-y-2">
               {accs.map(a => {
                 const pct = Math.round((a.used/a.total)*100);
                 return (
                   <Card key={a.id} className="p-4 flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0" style={{ background: a.color }}>
-                      {a.email[0].toUpperCase()}
+                    <div className="shrink-0 flex items-center justify-center" style={{ width: 24, height: 24 }}>
+                      <PlatformIcon name={p} size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{a.email}</div>
