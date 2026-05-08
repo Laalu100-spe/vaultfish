@@ -1,0 +1,214 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--accent-blue);
+  --color-primary-foreground: var(--foreground);
+  --color-secondary: var(--card);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--card);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--accent-blue);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--border);
+  --color-input: var(--card);
+  --color-ring: var(--accent-blue);
+  --color-gdrive: #4d90fe;
+  --color-dropbox: #f472b6;
+  --color-onedrive: #2dd4bf;
+  --color-amber: #f59e0b;
+  --color-purple: #a78bfa;
+  --color-green: #22c55e;
+  --color-red: #ef4444;
+  --color-yellow: #eab308;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+  --font-display: "Plus Jakarta Sans", "DM Sans", sans-serif;
+}
+
+:root, .dark {
+  --radius: 0.875rem;
+  --background: #060810;
+  --sidebar: rgba(8,9,14,0.85);
+  --card: rgba(13,15,22,0.72);
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --accent-blue: #4d90fe;
+  --foreground: #f0ede6;
+  --muted: #6b7280;
+}
+
+@layer base {
+  html, body {
+    background-color: #060810;
+    color: var(--foreground);
+    color-scheme: dark;
+    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+  }
+  * { border-color: var(--border); }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Plus Jakarta Sans", "DM Sans", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+}
+
+.font-display { font-family: "Plus Jakarta Sans", "DM Sans", sans-serif; }
+.font-mono-num { font-family: "DM Mono", ui-monospace, monospace; font-feature-settings: "tnum"; }
+
+.gradient-brand { background: linear-gradient(135deg, #4d90fe, #a78bfa); }
+.gradient-progress { background: linear-gradient(90deg, #a78bfa, #4d90fe, #2dd4bf); }
+.text-muted { color: var(--muted); }
+
+/* ===== Gemini-style mesh gradient background ===== */
+.app-bg {
+  position: relative;
+  isolation: isolate;
+  background-color: #060810;
+}
+.mesh-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.mesh-1 { background: radial-gradient(ellipse 80% 60% at 70% -10%, rgba(37,99,235,0.18) 0%, transparent 60%); }
+.mesh-2 { background: radial-gradient(ellipse 60% 50% at -10% 80%, rgba(124,58,237,0.14) 0%, transparent 55%); }
+.mesh-3 { background: radial-gradient(ellipse 50% 40% at 50% 110%, rgba(13,148,136,0.10) 0%, transparent 50%); }
+.mesh-4 {
+  background: radial-gradient(ellipse 80% 60% at 70% -10%, rgba(77,144,254,0.20) 0%, transparent 60%);
+  animation: breathe 8s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 1.0; }
+}
+
+/* ===== Glass cards ===== */
+.bg-card {
+  background: rgba(13,15,22,0.72) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  border-radius: 16px;
+}
+
+.card-hover { transition: border-color .2s ease, background-color .2s ease, transform .2s ease; }
+.card-hover:hover { border-color: rgba(255,255,255,0.14) !important; }
+
+.insight-card { transition: border-color .2s ease, background-color .2s ease; }
+.insight-card:hover { border-color: rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); }
+
+/* ===== Sidebar ===== */
+.sidebar-surface {
+  position: relative;
+  background: rgba(8,9,14,0.85) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-right: 1px solid rgba(255,255,255,0.05) !important;
+}
+.sidebar-surface > * { position: relative; z-index: 1; }
+
+.logo-glow { position: relative; }
+.logo-glow::before {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  height: 120px;
+  width: 120px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(77,144,254,0.10) 0%, transparent 70%);
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: 0;
+}
+.logo-glow > * { position: relative; z-index: 1; }
+
+/* Active sidebar item */
+.nav-active {
+  background: linear-gradient(90deg, rgba(77,144,254,0.18), transparent) !important;
+  border-left: 2px solid #4d90fe;
+  color: #8ab4ff !important;
+}
+
+/* Premium scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover { scrollbar-color: rgba(255,255,255,0.12) transparent; }
+::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+*:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+
+@keyframes barFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.bar-fill {
+  transform-origin: left center;
+  animation: barFill 0.6s ease forwards;
+}
+
+/* ===== Mascot Fish ===== */
+.mascot-fish {
+  position: absolute;
+  bottom: 64px;
+  right: 16px;
+  width: 36px;
+  height: 24px;
+  z-index: 2;
+  pointer-events: none;
+  animation: fishFloat 3s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+.mascot-fish svg { display: block; }
+.mascot-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 20px;
+  height: 4px;
+  margin-left: -10px;
+  background: rgba(77,144,254,0.3);
+  border-radius: 9999px;
+  filter: blur(8px);
+  transform-origin: center;
+  animation: fishShadow 3s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes fishFloat {
+  0%   { transform: translateY(0) rotate(-2deg); }
+  50%  { transform: translateY(-6px) rotate(2deg); }
+  100% { transform: translateY(0) rotate(-2deg); }
+}
+@keyframes fishShadow {
+  0%   { transform: scaleX(1); opacity: 0.6; }
+  50%  { transform: scaleX(0.7); opacity: 0.9; }
+  100% { transform: scaleX(1); opacity: 0.6; }
+}
+.mascot-fish.jumping {
+  animation: fishJump 0.5s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes fishJump {
+  0%   { transform: translateY(0) scale(1); }
+  40%  { transform: translateY(-40px) scale(1.2); }
+  75%  { transform: translateY(4px) scale(0.95); }
+  100% { transform: translateY(0) scale(1); }
+}
