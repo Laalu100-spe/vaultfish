@@ -163,8 +163,8 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
         <SectionLabel>Smart Insights</SectionLabel>
         <div className="space-y-2.5">
           {[
-            { i: ImageIcon, t: "Duplicate photos found", s: "You have 1,247 duplicates", v: "7.4 GB", c: "#f59e0b" },
-            { i: Video, t: "Large videos taking space", s: "Review and clean", v: "4.6 GB", c: "#ef4444" },
+            { i: Copy, t: "Duplicate photos found", s: "You have 1,247 duplicates", v: "7.4 GB", c: "#a78bfa" },
+            { i: FileVideo, t: "Large videos taking space", s: "Review and clean", v: "4.6 GB", c: "#fb923c" },
           ].map(x => {
             const I = x.i;
             return (
