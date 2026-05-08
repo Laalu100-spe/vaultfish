@@ -49,7 +49,7 @@ export function UploadScreen() {
           </div>
           <div className="mt-6 flex items-center justify-between">
             <div className="text-xs text-muted">Time left: <b className="text-foreground">2m 15s</b></div>
-            <button onClick={() => setStage("idle")} className="px-4 py-2 rounded-lg border border-border text-sm flex items-center gap-2"><Pause className="h-3.5 w-3.5"/> Pause</button>
+            <button onClick={() => setStage("idle")} className="px-4 py-2 rounded-lg border border-border text-sm flex items-center gap-2"><Pause size={18} strokeWidth={1.5}/> Pause</button>
           </div>
         </Card>
       </div>
