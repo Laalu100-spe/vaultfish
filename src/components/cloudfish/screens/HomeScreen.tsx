@@ -32,10 +32,10 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
   ];
 
   const quickActions = [
-    { i: Upload, l: "Upload", to: "upload", color: "#4d90fe", bg: "rgba(77,144,254,0.12)" },
-    { i: ScanLine, l: "Scan Files", to: "files", color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
-    { i: Trash2, l: "Clean Duplicates", to: "clean", color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
-    { i: LayoutGrid, l: "Smart Organize", to: "clean", color: "#2dd4bf", bg: "rgba(45,212,191,0.12)" },
+    { i: ArrowUpFromLine, l: "Upload", to: "upload", color: "#4d90fe", bg: "rgba(77,144,254,0.12)" },
+    { i: ScanLine, l: "Scan Files", to: "files", color: "#a78bfa", bg: "rgba(139,92,246,0.12)" },
+    { i: GitMerge, l: "Clean Duplicates", to: "clean", color: "#f87171", bg: "rgba(239,68,68,0.12)" },
+    { i: LayoutDashboard, l: "Smart Organize", to: "clean", color: "#2dd4bf", bg: "rgba(20,184,166,0.12)" },
   ];
 
   return (
