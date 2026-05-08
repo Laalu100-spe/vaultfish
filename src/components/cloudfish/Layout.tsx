@@ -56,7 +56,7 @@ const NAV: { id: ScreenId; label: string; icon: any }[] = [
   { id: "clouds", label: "Clouds", icon: Layers },
   { id: "upload", label: "Upload", icon: ArrowUpFromLine },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
-  { id: "clean", label: "Smart Clean", icon: Sparkles },
+  { id: "clean", label: "Smart Clean", icon: SmartCleanIcon },
   { id: "settings", label: "Settings", icon: SlidersHorizontal },
 ];
 
