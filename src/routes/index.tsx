@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Layout, type ScreenId } from "@/components/cloudfish/Layout";
 import { HomeScreen } from "@/components/cloudfish/screens/HomeScreen";
 import { CloudsScreen } from "@/components/cloudfish/screens/CloudsScreen";
@@ -9,6 +9,16 @@ import { UploadScreen } from "@/components/cloudfish/screens/UploadScreen";
 import { AnalyticsScreen } from "@/components/cloudfish/screens/AnalyticsScreen";
 import { CleanScreen } from "@/components/cloudfish/screens/CleanScreen";
 import { SettingsScreen } from "@/components/cloudfish/screens/SettingsScreen";
+import { Onboarding } from "@/components/cloudfish/Onboarding";
+import {
+  WithSkeleton,
+  HomeSkeleton,
+  FilesSkeleton,
+  GallerySkeleton,
+  CloudsSkeleton,
+  AnalyticsSkeleton,
+  GenericSkeleton,
+} from "@/components/cloudfish/Skeleton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,16 +32,62 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [screen, setScreen] = useState<ScreenId>("home");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+    try {
+      if (!localStorage.getItem("vaultfish_onboarded")) setShowOnboarding(true);
+    } catch {}
+  }, []);
+
+  if (hydrated && showOnboarding) {
+    return <Onboarding onDone={() => setShowOnboarding(false)} />;
+  }
+
   return (
     <Layout current={screen} onNavigate={setScreen}>
-      {screen === "home" && <HomeScreen onNav={setScreen} />}
-      {screen === "clouds" && <CloudsScreen />}
-      {screen === "files" && <FilesScreen />}
-      {screen === "gallery" && <GalleryScreen />}
-      {screen === "upload" && <UploadScreen />}
-      {screen === "analytics" && <AnalyticsScreen />}
-      {screen === "clean" && <CleanScreen />}
-      {screen === "settings" && <SettingsScreen />}
+      {screen === "home" && (
+        <WithSkeleton skeleton={<HomeSkeleton />}>
+          <HomeScreen onNav={setScreen} />
+        </WithSkeleton>
+      )}
+      {screen === "clouds" && (
+        <WithSkeleton skeleton={<CloudsSkeleton />}>
+          <CloudsScreen />
+        </WithSkeleton>
+      )}
+      {screen === "files" && (
+        <WithSkeleton skeleton={<FilesSkeleton />}>
+          <FilesScreen />
+        </WithSkeleton>
+      )}
+      {screen === "gallery" && (
+        <WithSkeleton skeleton={<GallerySkeleton />}>
+          <GalleryScreen />
+        </WithSkeleton>
+      )}
+      {screen === "upload" && (
+        <WithSkeleton skeleton={<GenericSkeleton />}>
+          <UploadScreen />
+        </WithSkeleton>
+      )}
+      {screen === "analytics" && (
+        <WithSkeleton skeleton={<AnalyticsSkeleton />}>
+          <AnalyticsScreen />
+        </WithSkeleton>
+      )}
+      {screen === "clean" && (
+        <WithSkeleton skeleton={<GenericSkeleton />}>
+          <CleanScreen />
+        </WithSkeleton>
+      )}
+      {screen === "settings" && (
+        <WithSkeleton skeleton={<GenericSkeleton />}>
+          <SettingsScreen />
+        </WithSkeleton>
+      )}
     </Layout>
   );
 }
