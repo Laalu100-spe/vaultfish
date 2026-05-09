@@ -325,3 +325,40 @@
 @keyframes previewFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes previewIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes listFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* === Skeleton shimmer === */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.fade-swap-in { animation: fadeSwapIn 300ms ease forwards; }
+.fade-swap-out { animation: fadeSwapOut 300ms ease forwards; }
+@keyframes fadeSwapIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeSwapOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* === Onboarding slide transitions === */
+.ob-slide-in-right { animation: obSlideInRight 350ms cubic-bezier(0.4,0,0.2,1) forwards; }
+.ob-slide-out-left { animation: obSlideOutLeft 350ms cubic-bezier(0.4,0,0.2,1) forwards; }
+@keyframes obSlideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes obSlideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+.ob-float { animation: obFloat 3s ease-in-out infinite; }
+@keyframes obFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.ob-check-circle { stroke-dasharray: 251; stroke-dashoffset: 251; animation: obDraw 600ms ease forwards; }
+.ob-check-mark { stroke-dasharray: 60; stroke-dashoffset: 60; animation: obDraw 400ms ease 600ms forwards; }
+@keyframes obDraw { to { stroke-dashoffset: 0; } }
