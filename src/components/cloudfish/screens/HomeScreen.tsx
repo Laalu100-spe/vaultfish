@@ -51,14 +51,14 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
             <div>
               <div className="section-label">Total Storage</div>
               <div className="mt-2 flex items-baseline gap-2 leading-none">
-                <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 72, fontWeight: 900, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>82</span>
+                <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 72, fontWeight: 900, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>74</span>
                 <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 18, fontWeight: 300, color: "rgba(255,255,255,0.4)", letterSpacing: "-0.02em", lineHeight: 1 }}>GB</span>
                 <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.25)", letterSpacing: "-0.01em" }}>/ 150 GB used</span>
               </div>
             </div>
-            <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontVariantNumeric: "tabular-nums" }}>55%</div>
+            <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontVariantNumeric: "tabular-nums" }}>49%</div>
           </div>
-          <StorageBar pct={55} fill="linear-gradient(90deg, #a78bfa, #4d90fe, #2dd4bf)" dotColor="#2dd4bf" />
+          <StorageBar pct={49} fill="linear-gradient(90deg, #a78bfa, #4d90fe, #2dd4bf)" dotColor="#2dd4bf" />
           <div className="mt-5 space-y-3.5">
             {accounts.map(a => {
               const pct = Math.round((a.used/a.total)*100);
