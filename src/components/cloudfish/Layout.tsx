@@ -81,7 +81,7 @@ export function Layout({
   onNavigate: (id: ScreenId) => void;
   children: ReactNode;
 }) {
-  const mobileNav = NAV.filter((n) => ["home", "gallery", "files", "analytics", "settings"].includes(n.id));
+  const mobileNav = NAV.filter((n) => ["home", "gallery", "files", "clouds", "clean", "settings"].includes(n.id));
 
   return (
     <div className="min-h-screen flex bg-background text-foreground app-bg">
