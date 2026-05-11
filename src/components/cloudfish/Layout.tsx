@@ -162,6 +162,19 @@ export function Layout({
               onClick={() => onNavigate(n.id)}
               className="relative flex flex-col items-center justify-center gap-1"
             >
+              {active && (
+                <span
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    width: 4,
+                    height: 4,
+                    borderRadius: 999,
+                    background: "#4d90fe",
+                  }}
+                />
+              )}
               <span
                 className="flex items-center justify-center"
                 style={{
@@ -171,7 +184,7 @@ export function Layout({
                   background: active ? "rgba(77,144,254,0.15)" : "transparent",
                 }}
               >
-                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "#6b7280" }} />
+                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "rgba(255,255,255,0.35)" }} />
               </span>
               <span
                 style={{
@@ -179,7 +192,7 @@ export function Layout({
                   fontSize: 11,
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
-                  color: active ? "#4d90fe" : "#6b7280",
+                  color: active ? "#4d90fe" : "rgba(255,255,255,0.35)",
                 }}
               >
                 {n.label}
