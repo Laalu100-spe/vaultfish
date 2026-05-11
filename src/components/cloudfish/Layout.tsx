@@ -144,7 +144,7 @@ export function Layout({
       </main>
 
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-5"
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-6"
         style={{
           background: "rgba(8,9,14,0.90)",
           backdropFilter: "blur(20px) saturate(180%)",
