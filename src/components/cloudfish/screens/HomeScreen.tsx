@@ -21,7 +21,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
   const accounts = [
     { name: "Google Drive", used: 42, total: 100 },
-    { name: "Dropbox", used: 22, total: 25 },
+    { name: "Dropbox", used: 14, total: 25 },
     { name: "OneDrive", used: 18, total: 25 },
   ];
 
