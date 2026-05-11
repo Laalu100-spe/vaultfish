@@ -35,7 +35,7 @@ export function AnalyticsScreen() {
               <div key={p.name} className="flex items-center gap-3">
                 <span className="h-3 w-3 rounded-full" style={{ background: p.color }} />
                 <div className="flex-1 text-sm">{p.name}</div>
-                <div className="text-sm text-muted">{p.value} GB ({Math.round(p.value/82*100)}%)</div>
+                <div className="text-sm text-muted">{p.value} GB ({Math.round(p.value/TOTAL_USED*100)}%)</div>
               </div>
             ))}
           </div>
