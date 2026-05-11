@@ -10,6 +10,7 @@ import { AnalyticsScreen } from "@/components/cloudfish/screens/AnalyticsScreen"
 import { CleanScreen } from "@/components/cloudfish/screens/CleanScreen";
 import { SettingsScreen } from "@/components/cloudfish/screens/SettingsScreen";
 import { Onboarding } from "@/components/cloudfish/Onboarding";
+import { LoadingOverlay } from "@/components/cloudfish/LoadingOverlay";
 import {
   WithSkeleton,
   HomeSkeleton,
@@ -34,6 +35,7 @@ function Index() {
   const [screen, setScreen] = useState<ScreenId>("home");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setHydrated(true);
@@ -47,47 +49,52 @@ function Index() {
   }
 
   return (
-    <Layout current={screen} onNavigate={setScreen}>
-      {screen === "home" && (
-        <WithSkeleton skeleton={<HomeSkeleton />}>
-          <HomeScreen onNav={setScreen} />
-        </WithSkeleton>
-      )}
-      {screen === "clouds" && (
-        <WithSkeleton skeleton={<CloudsSkeleton />}>
-          <CloudsScreen />
-        </WithSkeleton>
-      )}
-      {screen === "files" && (
-        <WithSkeleton skeleton={<FilesSkeleton />}>
-          <FilesScreen />
-        </WithSkeleton>
-      )}
-      {screen === "gallery" && (
-        <WithSkeleton skeleton={<GallerySkeleton />}>
-          <GalleryScreen />
-        </WithSkeleton>
-      )}
-      {screen === "upload" && (
-        <WithSkeleton skeleton={<GenericSkeleton />}>
-          <UploadScreen />
-        </WithSkeleton>
-      )}
-      {screen === "analytics" && (
-        <WithSkeleton skeleton={<AnalyticsSkeleton />}>
-          <AnalyticsScreen />
-        </WithSkeleton>
-      )}
-      {screen === "clean" && (
-        <WithSkeleton skeleton={<GenericSkeleton />}>
-          <CleanScreen />
-        </WithSkeleton>
-      )}
-      {screen === "settings" && (
-        <WithSkeleton skeleton={<GenericSkeleton />}>
-          <SettingsScreen />
-        </WithSkeleton>
-      )}
-    </Layout>
+    <>
+      {loading && <LoadingOverlay onDone={() => setLoading(false)} />}
+      <Layout current={screen} onNavigate={setScreen}>
+        <div key={screen} className="vf-screen-in">
+          {screen === "home" && (
+            <WithSkeleton skeleton={<HomeSkeleton />}>
+              <HomeScreen onNav={setScreen} />
+            </WithSkeleton>
+          )}
+          {screen === "clouds" && (
+            <WithSkeleton skeleton={<CloudsSkeleton />}>
+              <CloudsScreen />
+            </WithSkeleton>
+          )}
+          {screen === "files" && (
+            <WithSkeleton skeleton={<FilesSkeleton />}>
+              <FilesScreen />
+            </WithSkeleton>
+          )}
+          {screen === "gallery" && (
+            <WithSkeleton skeleton={<GallerySkeleton />}>
+              <GalleryScreen />
+            </WithSkeleton>
+          )}
+          {screen === "upload" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}>
+              <UploadScreen />
+            </WithSkeleton>
+          )}
+          {screen === "analytics" && (
+            <WithSkeleton skeleton={<AnalyticsSkeleton />}>
+              <AnalyticsScreen />
+            </WithSkeleton>
+          )}
+          {screen === "clean" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}>
+              <CleanScreen />
+            </WithSkeleton>
+          )}
+          {screen === "settings" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}>
+              <SettingsScreen />
+            </WithSkeleton>
+          )}
+        </div>
+      </Layout>
+    </>
   );
 }

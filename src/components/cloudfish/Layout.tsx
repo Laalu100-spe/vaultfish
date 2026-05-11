@@ -81,7 +81,7 @@ export function Layout({
   onNavigate: (id: ScreenId) => void;
   children: ReactNode;
 }) {
-  const mobileNav = NAV.filter((n) => ["home", "gallery", "files", "analytics", "settings"].includes(n.id));
+  const mobileNav = NAV.filter((n) => ["home", "gallery", "files", "clouds", "clean", "settings"].includes(n.id));
 
   return (
     <div className="min-h-screen flex bg-background text-foreground app-bg">
@@ -144,7 +144,7 @@ export function Layout({
       </main>
 
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-5"
+        className="md:hidden fixed bottom-0 inset-x-0 z-30 grid grid-cols-6"
         style={{
           background: "rgba(8,9,14,0.90)",
           backdropFilter: "blur(20px) saturate(180%)",
@@ -162,6 +162,19 @@ export function Layout({
               onClick={() => onNavigate(n.id)}
               className="relative flex flex-col items-center justify-center gap-1"
             >
+              {active && (
+                <span
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    width: 4,
+                    height: 4,
+                    borderRadius: 999,
+                    background: "#4d90fe",
+                  }}
+                />
+              )}
               <span
                 className="flex items-center justify-center"
                 style={{
@@ -171,7 +184,7 @@ export function Layout({
                   background: active ? "rgba(77,144,254,0.15)" : "transparent",
                 }}
               >
-                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "#6b7280" }} />
+                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "rgba(255,255,255,0.35)" }} />
               </span>
               <span
                 style={{
@@ -179,7 +192,7 @@ export function Layout({
                   fontSize: 11,
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
-                  color: active ? "#4d90fe" : "#6b7280",
+                  color: active ? "#4d90fe" : "rgba(255,255,255,0.35)",
                 }}
               >
                 {n.label}

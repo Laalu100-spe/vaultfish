@@ -4,9 +4,10 @@ import { ArrowRight } from "lucide-react";
 
 const PIE = [
   { name: "Google Drive", value: 42, color: "#4285f4" },
-  { name: "Dropbox", value: 22, color: "#ec4899" },
+  { name: "Dropbox", value: 14, color: "#ec4899" },
   { name: "OneDrive", value: 18, color: "#14b8a6" },
 ];
+const TOTAL_USED = PIE.reduce((s, p) => s + p.value, 0);
 
 const TREND = Array.from({ length: 30 }, (_, i) => ({ d: `May ${i+1}`, v: Math.round(50 + i*1.1 + Math.sin(i/3)*4) }));
 
@@ -26,7 +27,7 @@ export function AnalyticsScreen() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <div className="text-2xl font-semibold">82 GB</div><div className="text-xs text-muted">Used</div>
+              <div className="text-2xl font-semibold">{TOTAL_USED} GB</div><div className="text-xs text-muted">Used</div>
             </div>
           </div>
           <div className="space-y-3">
@@ -34,7 +35,7 @@ export function AnalyticsScreen() {
               <div key={p.name} className="flex items-center gap-3">
                 <span className="h-3 w-3 rounded-full" style={{ background: p.color }} />
                 <div className="flex-1 text-sm">{p.name}</div>
-                <div className="text-sm text-muted">{p.value} GB ({Math.round(p.value/82*100)}%)</div>
+                <div className="text-sm text-muted">{p.value} GB ({Math.round(p.value/TOTAL_USED*100)}%)</div>
               </div>
             ))}
           </div>
