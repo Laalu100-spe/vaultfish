@@ -2,7 +2,7 @@ export const ACCOUNTS = [
   { id: "g1", platform: "Google Drive", email: "saran@gmail.com", used: 42, total: 100, color: "#4285f4" },
   { id: "g2", platform: "Google Drive", email: "saran.college@gmail.com", used: 14, total: 15, color: "#f59e0b" },
   { id: "g3", platform: "Google Drive", email: "saran.work@gmail.com", used: 28, total: 100, color: "#a855f7" },
-  { id: "d1", platform: "Dropbox", email: "saran@gmail.com", used: 22, total: 25, color: "#ec4899" },
+  { id: "d1", platform: "Dropbox", email: "saran@gmail.com", used: 14, total: 25, color: "#ec4899" },
   { id: "o1", platform: "OneDrive", email: "saran@gmail.com", used: 18, total: 25, color: "#14b8a6" },
 ];
 
