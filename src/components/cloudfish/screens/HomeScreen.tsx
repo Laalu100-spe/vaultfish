@@ -102,7 +102,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
           </div>
           <div className="min-w-0">
             <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.9)" }}>
-              You can free up <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>12 GB</span> instantly
+              You can free up <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>8 GB</span> instantly
             </div>
             <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.35)" }}>
               Duplicates, old files, and large videos detected
