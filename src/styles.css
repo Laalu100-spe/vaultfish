@@ -386,3 +386,27 @@
 /* === Screen transitions === */
 .vf-screen-in { animation: vfScreenIn 200ms ease-out forwards; will-change: opacity, transform; }
 @keyframes vfScreenIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+
+/* === Quick action cards (responsive) === */
+.vf-quick-action { border-radius: 12px; padding: 14px; }
+.vf-quick-action-icon { width: 40px; height: 40px; }
+.vf-quick-action-glyph { width: 18px; height: 18px; }
+.vf-quick-action-label { font-size: 11px; }
+@media (min-width: 768px) {
+  .vf-quick-action { border-radius: 14px; padding: 20px; }
+  .vf-quick-action-icon { width: 44px; height: 44px; }
+  .vf-quick-action-glyph { width: 18px; height: 18px; }
+  .vf-quick-action-label { font-size: 13px; }
+}
+
+/* === Mesh layer GPU + mobile sizing === */
+.mesh-layer {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+@media (max-width: 767px) {
+  .mesh-1 { background: radial-gradient(circle 300px at 90% 0%, rgba(37,99,235,0.15) 0%, transparent 70%); }
+  .mesh-2 { background: radial-gradient(circle 250px at 0% 100%, rgba(124,58,237,0.12) 0%, transparent 70%); }
+  .mesh-3, .mesh-4 { display: none; }
+}
