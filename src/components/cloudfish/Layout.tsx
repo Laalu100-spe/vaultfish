@@ -128,7 +128,7 @@ export function Layout({
         <div className="mt-auto text-xs text-muted px-2">Swim across all your clouds.</div>
       </aside>
 
-      <main className="flex-1 min-w-0 pb-24 md:pb-8 relative z-10">
+      <main className="flex-1 min-w-0 md:pb-8 relative z-10" style={{ paddingBottom: "calc(76px + env(safe-area-inset-bottom))" }}>
         <div
           className="md:hidden sticky top-0 z-20 px-4 py-3 flex items-center"
           style={{
@@ -150,17 +150,20 @@ export function Layout({
           backdropFilter: "blur(20px) saturate(180%)",
           WebkitBackdropFilter: "blur(20px) saturate(180%)",
           borderTop: "1px solid rgba(255,255,255,0.06)",
-          height: 64,
+          height: 68,
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
         {mobileNav.map((n) => {
           const Icon = n.icon;
           const active = current === n.id;
+          const isSmartClean = n.id === "clean";
           return (
             <button
               key={n.id}
               onClick={() => onNavigate(n.id)}
-              className="relative flex flex-col items-center justify-center gap-1"
+              className="relative flex flex-col items-center justify-center"
+              style={{ gap: 3 }}
             >
               {active && (
                 <span
@@ -175,24 +178,16 @@ export function Layout({
                   }}
                 />
               )}
-              <span
-                className="flex items-center justify-center"
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 999,
-                  background: active ? "rgba(77,144,254,0.15)" : "transparent",
-                }}
-              >
-                <Icon size={18} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "rgba(255,255,255,0.35)" }} />
-              </span>
+              <Icon size={20} strokeWidth={1.5} style={{ color: active ? "#4d90fe" : "rgba(255,255,255,0.35)" }} />
               <span
                 style={{
                   fontFamily: '"Inter", sans-serif',
-                  fontSize: 11,
+                  fontSize: isSmartClean ? 8 : 9,
                   fontWeight: 500,
                   letterSpacing: "-0.01em",
                   color: active ? "#4d90fe" : "rgba(255,255,255,0.35)",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1,
                 }}
               >
                 {n.label}
