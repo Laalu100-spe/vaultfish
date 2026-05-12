@@ -102,7 +102,7 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
           </div>
           <div className="min-w-0">
             <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "rgba(255,255,255,0.9)" }}>
-              You can free up <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>8 GB</span> instantly
+              You can free up <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>12.3 GB</span> instantly
             </div>
             <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 400, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.35)" }}>
               Duplicates, old files, and large videos detected
@@ -127,12 +127,10 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
               <button
                 key={a.l}
                 onClick={() => onNav(a.to)}
-                className="flex flex-col items-center gap-3 transition-all"
+                className="vf-quick-action flex flex-col items-center gap-3 transition-all"
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: 14,
-                  padding: 20,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = "rgba(77,144,254,0.08)";
@@ -143,10 +141,10 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
                   e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
                 }}
               >
-                <div className="flex items-center justify-center" style={{ background: a.bg, height: 44, width: 44, borderRadius: 999 }}>
-                  <I size={18} strokeWidth={1.5} style={{ color: a.color }} />
+                <div className="vf-quick-action-icon flex items-center justify-center" style={{ background: a.bg, borderRadius: 999 }}>
+                  <I className="vf-quick-action-glyph" strokeWidth={1.5} style={{ color: a.color }} />
                 </div>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.7)" }}>{a.l}</span>
+                <span className="vf-quick-action-label" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, letterSpacing: "-0.01em", color: "rgba(255,255,255,0.7)" }}>{a.l}</span>
               </button>
             );
           })}
