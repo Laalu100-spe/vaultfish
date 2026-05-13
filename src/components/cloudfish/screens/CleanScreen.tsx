@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { SectionTitle } from "../ui";
 import { ChevronDown, Check } from "lucide-react";
 import { DecreasingLinesIcon } from "../PlatformIcons";
@@ -36,12 +36,131 @@ function ScreenshotIcon({ color = "#4d90fe" }: { color?: string }) {
   );
 }
 
-const CATS = [
-  { id: "dup", t: "Duplicate Photos", n: "1,247 files", s: "7.4 GB", I: DuplicateIcon, files: ["IMG_2341.jpg","IMG_2341 (1).jpg","Beach_2024.png","Beach_2024 (copy).png"] },
-  { id: "vid", t: "Large Videos", n: "18 files", s: "4.6 GB", I: VideoIcon, files: ["Vacation.mp4 — 1.8 GB","Wedding.mov — 1.2 GB","Trip.mp4 — 800 MB"] },
-  { id: "old", t: "Old Files (not opened > 1 year)", n: "326 files", s: "2.1 GB", I: ClockIcon, files: ["TaxReturn_2022.pdf","Old_Resume.docx","Archive_2021.zip"] },
-  { id: "ss", t: "Screenshots", n: "892 files", s: "1.2 GB", I: ScreenshotIcon, files: ["Screenshot 2025-03-12.png","Screenshot 2025-03-13.png","Screenshot 2025-03-14.png"] },
+// ---------- Thumbnails ----------
+function MountainThumb({ tint }: { tint?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" width={48} height={48} preserveAspectRatio="xMidYMid slice" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="mtBg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#2d6a9f" />
+          <stop offset="100%" stopColor="#1a3a5c" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" fill="url(#mtBg)" />
+      <circle cx="36" cy="12" r="4" fill="#fef3c7" opacity="0.85" />
+      <polygon points="0,38 12,20 22,30 32,16 48,36 48,48 0,48" fill="#0f1f33" opacity="0.9" />
+      <polygon points="9,28 13,24 18,28" fill="#fff" opacity="0.7" />
+      {tint && <rect width="48" height="48" fill={tint} opacity="0.28" />}
+    </svg>
+  );
+}
+
+function SunsetThumb({ tint }: { tint?: string }) {
+  return (
+    <svg viewBox="0 0 48 48" width={48} height={48} preserveAspectRatio="xMidYMid slice" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id="suBg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#7a1d1d" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" fill="url(#suBg)" />
+      <circle cx="24" cy="28" r="7" fill="#fde047" opacity="0.95" />
+      <rect y="30" width="48" height="18" fill="#1a0808" opacity="0.85" />
+      {tint && <rect width="48" height="48" fill={tint} opacity="0.28" />}
+    </svg>
+  );
+}
+
+function ScreenshotThumb() {
+  return (
+    <svg viewBox="0 0 48 48" width={48} height={48} style={{ display: "block" }}>
+      <rect width="48" height="48" fill="#0f1722" />
+      <rect x="13" y="8" width="22" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.55)" strokeWidth="1.2" />
+      <rect x="16" y="13" width="16" height="2" rx="1" fill="rgba(255,255,255,0.4)" />
+      <rect x="16" y="18" width="12" height="1.5" rx="0.75" fill="rgba(255,255,255,0.3)" />
+      <rect x="16" y="22" width="14" height="1.5" rx="0.75" fill="rgba(255,255,255,0.3)" />
+      <rect x="16" y="28" width="16" height="6" rx="1" fill="rgba(77,144,254,0.45)" />
+    </svg>
+  );
+}
+
+function VideoThumb({ color = "#fb923c", duration }: { color?: string; duration: string }) {
+  return (
+    <div style={{ position: "relative", width: 48, height: 48, borderRadius: 8, overflow: "hidden", background: `linear-gradient(135deg, ${color}, #1a1410)` }}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 2 L12 7 L3 12 Z" fill="#fff" /></svg>
+      </div>
+      <span style={{
+        position: "absolute", right: 3, bottom: 3,
+        background: "rgba(0,0,0,0.6)", color: "#fff",
+        fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 9, fontWeight: 700,
+        padding: "1px 4px", borderRadius: 3, letterSpacing: "-0.01em",
+      }}>{duration}</span>
+    </div>
+  );
+}
+
+function DocThumb({ ext, color }: { ext: string; color: string }) {
+  return (
+    <svg viewBox="0 0 48 48" width={48} height={48} style={{ display: "block" }}>
+      <rect width="48" height="48" fill="#12161e" />
+      <rect x="10" y="7" width="22" height="30" rx="2" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" />
+      <path d="M28 7 L34 13 L28 13 Z" fill="rgba(255,255,255,0.12)" />
+      <rect x="13" y="28" width="16" height="6" rx="1.5" fill={color} />
+      <text x="21" y="32.6" fontFamily="Inter, sans-serif" fontSize="4.6" fontWeight="800" fill="#fff" textAnchor="middle" letterSpacing="0.04em">{ext.toUpperCase()}</text>
+    </svg>
+  );
+}
+
+// ---------- Categories with file objects ----------
+type CleanFile = {
+  name: string;
+  size: string; // human
+  bytes: number; // for math (in MB)
+  thumb: ReactNode;
+  pairId?: number; // for duplicate visual grouping
+};
+
+const DUP_FILES: CleanFile[] = [
+  { name: "IMG_2341.jpg", size: "3.2 MB", bytes: 3.2, thumb: <MountainThumb />, pairId: 1 },
+  { name: "IMG_2341 (1).jpg", size: "3.2 MB", bytes: 3.2, thumb: <MountainThumb tint="#fb923c" />, pairId: 1 },
+  { name: "Beach_2024.png", size: "2.8 MB", bytes: 2.8, thumb: <SunsetThumb />, pairId: 2 },
+  { name: "Beach_2024 (copy).png", size: "2.8 MB", bytes: 2.8, thumb: <SunsetThumb tint="#ec4899" />, pairId: 2 },
 ];
+
+const VID_FILES: CleanFile[] = [
+  { name: "Vacation.mp4", size: "1.8 GB", bytes: 1800, thumb: <VideoThumb duration="8:42" color="#fb923c" /> },
+  { name: "Wedding.mov", size: "1.2 GB", bytes: 1200, thumb: <VideoThumb duration="14:05" color="#a855f7" /> },
+  { name: "Trip.mp4", size: "800 MB", bytes: 800, thumb: <VideoThumb duration="3:21" color="#14b8a6" /> },
+];
+
+const OLD_FILES: CleanFile[] = [
+  { name: "TaxReturn_2022.pdf", size: "820 KB", bytes: 0.82, thumb: <DocThumb ext="pdf" color="#ef4444" /> },
+  { name: "Old_Resume.docx", size: "120 KB", bytes: 0.12, thumb: <DocThumb ext="doc" color="#4d90fe" /> },
+  { name: "Archive_2021.zip", size: "1.1 GB", bytes: 1100, thumb: <DocThumb ext="zip" color="#facc15" /> },
+];
+
+const SS_FILES: CleanFile[] = [
+  { name: "Screenshot 2025-03-12.png", size: "420 KB", bytes: 0.42, thumb: <ScreenshotThumb /> },
+  { name: "Screenshot 2025-03-13.png", size: "380 KB", bytes: 0.38, thumb: <ScreenshotThumb /> },
+  { name: "Screenshot 2025-03-14.png", size: "510 KB", bytes: 0.51, thumb: <ScreenshotThumb /> },
+];
+
+const CATS = [
+  { id: "dup", t: "Duplicate Photos", n: "1,247 files", s: "7.4 GB", I: DuplicateIcon, files: DUP_FILES, isDup: true },
+  { id: "vid", t: "Large Videos", n: "18 files", s: "4.6 GB", I: VideoIcon, files: VID_FILES, isDup: false },
+  { id: "old", t: "Old Files (not opened > 1 year)", n: "326 files", s: "2.1 GB", I: ClockIcon, files: OLD_FILES, isDup: false },
+  { id: "ss", t: "Screenshots", n: "892 files", s: "1.2 GB", I: ScreenshotIcon, files: SS_FILES, isDup: false },
+];
+
+function fileKey(catId: string, name: string) { return `${catId}::${name}`; }
+
+function fmtGB(mb: number) {
+  const gb = mb / 1024;
+  if (gb >= 1) return `${gb.toFixed(1)} GB`;
+  return `${mb.toFixed(0)} MB`;
+}
 
 function FishGlyph({ size = 14, color = "#4d90fe" }: { size?: number; color?: string }) {
   const w = size;
@@ -80,10 +199,67 @@ function TrashAnimation() {
   );
 }
 
+function CircleCheck({ checked, onClick }: { checked: boolean; onClick: (e: React.MouseEvent) => void }) {
+  return (
+    <span
+      onClick={onClick}
+      style={{
+        height: 22, width: 22, borderRadius: 999, flexShrink: 0,
+        border: checked ? "none" : "2px solid rgba(255,255,255,0.4)",
+        background: checked ? "#4d90fe" : "transparent",
+        display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+        transition: "background 150ms ease",
+      }}
+    >
+      {checked && (
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2.5 6.2 L5 8.6 L9.5 3.6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
 export function CleanScreen() {
   const [open, setOpen] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [cleaning, setCleaning] = useState(false);
+
+  // All files start checked
+  const allKeys = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of CATS) for (const f of c.files) s.add(fileKey(c.id, f.name));
+    return s;
+  }, []);
+  const [checked, setChecked] = useState<Set<string>>(allKeys);
+
+  const toggleFile = (catId: string, name: string) => {
+    const k = fileKey(catId, name);
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k); else next.add(k);
+      return next;
+    });
+  };
+
+  const selectAllInCat = (catId: string) => {
+    const cat = CATS.find((c) => c.id === catId)!;
+    setChecked((prev) => {
+      const next = new Set(prev);
+      for (const f of cat.files) next.add(fileKey(catId, f.name));
+      return next;
+    });
+  };
+
+  const totalSelectedMB = useMemo(() => {
+    let mb = 0;
+    for (const c of CATS) for (const f of c.files) {
+      if (checked.has(fileKey(c.id, f.name))) mb += f.bytes;
+    }
+    return mb;
+  }, [checked]);
+
+  const totalSelectedCount = checked.size;
 
   const startClean = () => {
     const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -113,6 +289,9 @@ export function CleanScreen() {
       </div>
     );
   }
+
+  const allSelected = totalSelectedCount === allKeys.size;
+  const cleanLabel = allSelected ? `Clean All · 12.3 GB` : `Clean Selected · ${fmtGB(totalSelectedMB)}`;
 
   return (
     <div className="space-y-5">
@@ -204,13 +383,62 @@ export function CleanScreen() {
                 </span>
               )}
               {isOpen && !cleaning && (
-                <div className="border-t border-border p-3 space-y-1.5" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  {cat.files.map(f => (
-                    <div key={f} className="text-xs px-3 py-2 bg-background rounded-lg flex justify-between">
-                      <span>{f}</span>
-                      <input type="checkbox" defaultChecked className="accent-[color:var(--accent-blue)]" />
-                    </div>
-                  ))}
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: 12 }}>
+                  {cat.files.map((f, i) => {
+                    const k = fileKey(cat.id, f.name);
+                    const isChecked = checked.has(k);
+                    const prevPair = i > 0 ? cat.files[i - 1].pairId : undefined;
+                    const showPairLabel = cat.isDup && f.pairId && f.pairId !== prevPair;
+                    const pairBg = cat.isDup && f.pairId
+                      ? (f.pairId % 2 === 0 ? "rgba(255,255,255,0.04)" : "transparent")
+                      : "transparent";
+                    return (
+                      <div key={f.name}>
+                        {showPairLabel && (
+                          <div style={{
+                            fontFamily: '"Inter", sans-serif', fontSize: 9, fontWeight: 500,
+                            color: "rgba(255,255,255,0.2)", textTransform: "uppercase",
+                            letterSpacing: "0.08em", padding: "6px 8px 4px",
+                          }}>
+                            duplicate pair
+                          </div>
+                        )}
+                        <div
+                          style={{
+                            display: "flex", alignItems: "center", gap: 12,
+                            padding: "8px 10px", borderRadius: 8,
+                            background: pairBg,
+                          }}
+                        >
+                          <div style={{ width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
+                            {f.thumb}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {f.name}
+                            </div>
+                            <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2, fontVariantNumeric: "tabular-nums" }}>
+                              {f.size}
+                            </div>
+                          </div>
+                          <CircleCheck checked={isChecked} onClick={(e) => { e.stopPropagation(); toggleFile(cat.id, f.name); }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <button
+                    onClick={() => selectAllInCat(cat.id)}
+                    style={{
+                      marginTop: 10, width: "100%",
+                      background: "rgba(77,144,254,0.1)",
+                      border: "1px solid rgba(77,144,254,0.2)",
+                      borderRadius: 8, padding: "8px 16px",
+                      fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 600,
+                      color: "#4d90fe", cursor: "pointer",
+                    }}
+                  >
+                    {cat.isDup ? "Select All Duplicates" : "Select All"}
+                  </button>
                 </div>
               )}
             </div>
@@ -221,7 +449,7 @@ export function CleanScreen() {
 
       <button
         onClick={startClean}
-        disabled={cleaning}
+        disabled={cleaning || totalSelectedCount === 0}
         className="w-full text-white clean-all-btn"
         style={{
           background: "#4d90fe",
@@ -233,9 +461,11 @@ export function CleanScreen() {
           letterSpacing: "0.01em",
           boxShadow: "0 0 32px rgba(77,144,254,0.30)",
           transition: "background 200ms ease, box-shadow 200ms ease",
+          opacity: totalSelectedCount === 0 ? 0.5 : 1,
+          fontVariantNumeric: "tabular-nums",
         }}
       >
-        Clean All · 12.3 GB
+        {cleanLabel}
       </button>
     </div>
   );

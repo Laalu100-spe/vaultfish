@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Cloud, Download, Play, Share2, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Cloud, Download, FolderInput, Play, Share2, Trash2, X } from "lucide-react";
 
 type SceneKind = "mountain" | "city" | "forest" | "sunset" | "ocean" | "desert";
 
@@ -245,11 +245,35 @@ function GlassDropdown({
   );
 }
 
-function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
+function CheckMark() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+      <path d="M2.5 6.2 L5 8.6 L9.5 3.6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function LazyCell({
+  item,
+  onOpen,
+  selectionMode,
+  selected,
+  onToggle,
+  onLongPress,
+}: {
+  item: Item;
+  onOpen: () => void;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggle: () => void;
+  onLongPress: () => void;
+}) {
   const ref = useRef<HTMLButtonElement>(null);
   const [visible, setVisible] = useState(false);
   const [hover, setHover] = useState(false);
-  const [checked, setChecked] = useState(false);
+  const [pulse, setPulse] = useState(false);
+  const lpTimer = useRef<number | null>(null);
+  const lpTriggered = useRef(false);
 
   useEffect(() => {
     if (!ref.current || visible) return;
@@ -268,12 +292,44 @@ function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
     return () => io.disconnect();
   }, [visible]);
 
+  const startLP = () => {
+    lpTriggered.current = false;
+    if (lpTimer.current) window.clearTimeout(lpTimer.current);
+    lpTimer.current = window.setTimeout(() => {
+      lpTriggered.current = true;
+      setPulse(true);
+      window.setTimeout(() => setPulse(false), 200);
+      onLongPress();
+    }, 400);
+  };
+  const cancelLP = () => {
+    if (lpTimer.current) {
+      window.clearTimeout(lpTimer.current);
+      lpTimer.current = null;
+    }
+  };
+
+  const handleClick = () => {
+    if (lpTriggered.current) {
+      lpTriggered.current = false;
+      return;
+    }
+    if (selectionMode) onToggle();
+    else onOpen();
+  };
+
+  const showCheckbox = selectionMode || hover;
+
   return (
     <button
       ref={ref}
-      onClick={onOpen}
+      onClick={handleClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onTouchStart={startLP}
+      onTouchEnd={cancelLP}
+      onTouchMove={cancelLP}
+      onTouchCancel={cancelLP}
       style={{
         position: "relative",
         gridRow: item.tall ? "span 2" : undefined,
@@ -282,10 +338,12 @@ function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
         overflow: "hidden",
         background: `linear-gradient(135deg, ${item.from}, ${item.to})`,
         contain: "layout style paint",
-        border: 0,
+        border: selected ? "2px solid #4d90fe" : 0,
         padding: 0,
         cursor: "pointer",
         display: "block",
+        transform: pulse ? "scale(0.95)" : selected ? "scale(0.95)" : "scale(1)",
+        transition: "transform 200ms ease, border-color 150ms ease",
       }}
     >
       {visible && (
@@ -343,29 +401,28 @@ function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
         </>
       )}
 
-      {/* Selection checkbox top-right (on hover or checked) */}
+      {/* Selection checkbox top-left */}
       <span
-        onClick={(e) => { e.stopPropagation(); setChecked((c) => !c); }}
+        onClick={(e) => { e.stopPropagation(); onToggle(); }}
         style={{
           position: "absolute",
           top: 8,
-          right: 8,
+          left: 8,
           height: 22,
           width: 22,
           borderRadius: 999,
-          border: "1.5px solid rgba(255,255,255,0.9)",
-          background: checked ? "#4d90fe" : "rgba(0,0,0,0.25)",
-          opacity: hover || checked ? 1 : 0,
+          border: selected ? "none" : "2px solid rgba(255,255,255,0.6)",
+          background: selected ? "#4d90fe" : "transparent",
+          opacity: showCheckbox ? 1 : 0,
           transition: "opacity 200ms ease, background 200ms ease",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 12,
-          color: "#fff",
           cursor: "pointer",
+          boxShadow: selected ? "0 0 0 2px rgba(0,0,0,0.25)" : "0 1px 3px rgba(0,0,0,0.4)",
         }}
       >
-        {checked ? "✓" : ""}
+        {selected && <CheckMark />}
       </span>
     </button>
   );
@@ -516,11 +573,23 @@ export function GalleryScreen() {
   const [cloud, setCloud] = useState("All Clouds");
   const [sort, setSort] = useState("Recent");
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const visible = useMemo(
     () => ITEMS.filter((x) => tab === "all" || (tab === "videos" ? x.video : !x.video)),
     [tab],
   );
+
+  const toggle = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const exitSelection = () => { setSelectionMode(false); setSelected(new Set()); };
+  const selectAll = () => setSelected(new Set(visible.map((v) => v.id)));
 
   const tabs: ("all" | "photos" | "videos")[] = ["all", "photos", "videos"];
   const timeTabs: ("Years" | "Months" | "Days")[] = ["Years", "Months", "Days"];
@@ -528,6 +597,56 @@ export function GalleryScreen() {
 
   return (
     <div className="space-y-5">
+      {/* Selection bar */}
+      {selectionMode && (
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            background: "rgba(77,144,254,0.15)",
+            borderBottom: "1px solid rgba(77,144,254,0.2)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            margin: "-20px -20px 0",
+            borderRadius: "0 0 12px 12px",
+          }}
+        >
+          <button
+            onClick={exitSelection}
+            style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.85)", fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+          >
+            Cancel
+          </button>
+          <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, color: "#4d90fe", fontVariantNumeric: "tabular-nums" }}>
+            {selected.size} selected
+          </div>
+          <div style={{ flex: 1 }} />
+          <button
+            onClick={selectAll}
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 999, padding: "6px 12px", color: "#fff", fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 500, cursor: "pointer" }}
+          >
+            Select All
+          </button>
+          {[
+            { I: Share2, c: "#fff" },
+            { I: FolderInput, c: "#fff" },
+            { I: Trash2, c: "#ef4444" },
+          ].map(({ I, c }, i) => (
+            <button
+              key={i}
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 999, height: 32, width: 32, display: "flex", alignItems: "center", justifyContent: "center", color: c, cursor: "pointer" }}
+            >
+              <I size={15} strokeWidth={1.6} />
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", color: "rgba(255,255,255,0.95)" }}>
@@ -592,7 +711,15 @@ export function GalleryScreen() {
           }}
         >
           {visible.map((it, i) => (
-            <LazyCell key={it.id} item={it} onOpen={() => setOpenIdx(i)} />
+            <LazyCell
+              key={it.id}
+              item={it}
+              onOpen={() => setOpenIdx(i)}
+              selectionMode={selectionMode}
+              selected={selected.has(it.id)}
+              onToggle={() => { if (!selectionMode) setSelectionMode(true); toggle(it.id); }}
+              onLongPress={() => { setSelectionMode(true); toggle(it.id); }}
+            />
           ))}
         </div>
       )}
