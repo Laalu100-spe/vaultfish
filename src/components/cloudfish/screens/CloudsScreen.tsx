@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, SectionTitle, Bar } from "../ui";
 import { ACCOUNTS } from "../data";
-import { Plus, X, AlertTriangle } from "lucide-react";
+import { Plus, X, FolderInput, Copy, LogOut } from "lucide-react";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
+
 
 type Modal = { id: string; email: string; gb: number } | null;
 
