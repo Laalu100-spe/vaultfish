@@ -118,7 +118,7 @@ type CleanFile = {
   name: string;
   size: string; // human
   bytes: number; // for math (in MB)
-  thumb: JSX.Element;
+  thumb: ReactNode;
   pairId?: number; // for duplicate visual grouping
 };
 
