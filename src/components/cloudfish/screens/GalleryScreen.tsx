@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Cloud, Download, Play, Share2, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Cloud, Download, FolderInput, Play, Share2, Trash2, X } from "lucide-react";
 
 type SceneKind = "mountain" | "city" | "forest" | "sunset" | "ocean" | "desert";
 
