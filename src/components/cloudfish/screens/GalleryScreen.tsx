@@ -597,6 +597,56 @@ export function GalleryScreen() {
 
   return (
     <div className="space-y-5">
+      {/* Selection bar */}
+      {selectionMode && (
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            background: "rgba(77,144,254,0.15)",
+            borderBottom: "1px solid rgba(77,144,254,0.2)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            margin: "-20px -20px 0",
+            borderRadius: "0 0 12px 12px",
+          }}
+        >
+          <button
+            onClick={exitSelection}
+            style={{ background: "transparent", border: 0, color: "rgba(255,255,255,0.85)", fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+          >
+            Cancel
+          </button>
+          <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, color: "#4d90fe", fontVariantNumeric: "tabular-nums" }}>
+            {selected.size} selected
+          </div>
+          <div style={{ flex: 1 }} />
+          <button
+            onClick={selectAll}
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 999, padding: "6px 12px", color: "#fff", fontFamily: '"Inter", sans-serif', fontSize: 12, fontWeight: 500, cursor: "pointer" }}
+          >
+            Select All
+          </button>
+          {[
+            { I: Share2, c: "#fff" },
+            { I: FolderInput, c: "#fff" },
+            { I: Trash2, c: "#ef4444" },
+          ].map(({ I, c }, i) => (
+            <button
+              key={i}
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 999, height: 32, width: 32, display: "flex", alignItems: "center", justifyContent: "center", color: c, cursor: "pointer" }}
+            >
+              <I size={15} strokeWidth={1.6} />
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", color: "rgba(255,255,255,0.95)" }}>
@@ -661,7 +711,15 @@ export function GalleryScreen() {
           }}
         >
           {visible.map((it, i) => (
-            <LazyCell key={it.id} item={it} onOpen={() => setOpenIdx(i)} />
+            <LazyCell
+              key={it.id}
+              item={it}
+              onOpen={() => setOpenIdx(i)}
+              selectionMode={selectionMode}
+              selected={selected.has(it.id)}
+              onToggle={() => { if (!selectionMode) setSelectionMode(true); toggle(it.id); }}
+              onLongPress={() => { setSelectionMode(true); toggle(it.id); }}
+            />
           ))}
         </div>
       )}
