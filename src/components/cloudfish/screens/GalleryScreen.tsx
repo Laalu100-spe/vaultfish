@@ -573,11 +573,23 @@ export function GalleryScreen() {
   const [cloud, setCloud] = useState("All Clouds");
   const [sort, setSort] = useState("Recent");
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const visible = useMemo(
     () => ITEMS.filter((x) => tab === "all" || (tab === "videos" ? x.video : !x.video)),
     [tab],
   );
+
+  const toggle = (id: number) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const exitSelection = () => { setSelectionMode(false); setSelected(new Set()); };
+  const selectAll = () => setSelected(new Set(visible.map((v) => v.id)));
 
   const tabs: ("all" | "photos" | "videos")[] = ["all", "photos", "videos"];
   const timeTabs: ("Years" | "Months" | "Days")[] = ["Years", "Months", "Days"];
