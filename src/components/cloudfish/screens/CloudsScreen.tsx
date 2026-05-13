@@ -10,10 +10,29 @@ type Modal = { id: string; email: string; gb: number } | null;
 export function CloudsScreen() {
   const [modal, setModal] = useState<Modal>(null);
   const [choice, setChoice] = useState<"move"|"copy"|"disconnect">("move");
-  const [dest, setDest] = useState("Dropbox");
+  const acct = modal ? ACCOUNTS.find(a => a.id === modal.id) : undefined;
+  const platform = acct?.platform ?? "Google Drive";
+  const otherAccounts = ACCOUNTS.filter(a => a.id !== modal?.id);
+  const [dest, setDest] = useState<string>("");
+
+  useEffect(() => {
+    if (modal) {
+      setChoice("move");
+      setDest(otherAccounts[0] ? `${otherAccounts[0].platform} · ${otherAccounts[0].email}` : "");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modal?.id]);
+
+  useEffect(() => {
+    if (!modal) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setModal(null); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [modal]);
 
   const platforms = ["Google Drive", "Dropbox", "OneDrive"];
-  const cta = choice === "move" ? `Move & Disconnect` : choice === "copy" ? "Copy & Disconnect" : "Disconnect";
+  const cta = choice === "move" ? "Move & Disconnect" : choice === "copy" ? "Copy & Disconnect" : "Disconnect";
+
 
   return (
     <div className="space-y-6">
