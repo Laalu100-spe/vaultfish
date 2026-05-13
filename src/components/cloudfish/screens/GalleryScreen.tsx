@@ -245,11 +245,35 @@ function GlassDropdown({
   );
 }
 
-function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
+function CheckMark() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+      <path d="M2.5 6.2 L5 8.6 L9.5 3.6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function LazyCell({
+  item,
+  onOpen,
+  selectionMode,
+  selected,
+  onToggle,
+  onLongPress,
+}: {
+  item: Item;
+  onOpen: () => void;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggle: () => void;
+  onLongPress: () => void;
+}) {
   const ref = useRef<HTMLButtonElement>(null);
   const [visible, setVisible] = useState(false);
   const [hover, setHover] = useState(false);
-  const [checked, setChecked] = useState(false);
+  const [pulse, setPulse] = useState(false);
+  const lpTimer = useRef<number | null>(null);
+  const lpTriggered = useRef(false);
 
   useEffect(() => {
     if (!ref.current || visible) return;
@@ -268,12 +292,44 @@ function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
     return () => io.disconnect();
   }, [visible]);
 
+  const startLP = () => {
+    lpTriggered.current = false;
+    if (lpTimer.current) window.clearTimeout(lpTimer.current);
+    lpTimer.current = window.setTimeout(() => {
+      lpTriggered.current = true;
+      setPulse(true);
+      window.setTimeout(() => setPulse(false), 200);
+      onLongPress();
+    }, 400);
+  };
+  const cancelLP = () => {
+    if (lpTimer.current) {
+      window.clearTimeout(lpTimer.current);
+      lpTimer.current = null;
+    }
+  };
+
+  const handleClick = () => {
+    if (lpTriggered.current) {
+      lpTriggered.current = false;
+      return;
+    }
+    if (selectionMode) onToggle();
+    else onOpen();
+  };
+
+  const showCheckbox = selectionMode || hover;
+
   return (
     <button
       ref={ref}
-      onClick={onOpen}
+      onClick={handleClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onTouchStart={startLP}
+      onTouchEnd={cancelLP}
+      onTouchMove={cancelLP}
+      onTouchCancel={cancelLP}
       style={{
         position: "relative",
         gridRow: item.tall ? "span 2" : undefined,
@@ -282,10 +338,12 @@ function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
         overflow: "hidden",
         background: `linear-gradient(135deg, ${item.from}, ${item.to})`,
         contain: "layout style paint",
-        border: 0,
+        border: selected ? "2px solid #4d90fe" : 0,
         padding: 0,
         cursor: "pointer",
         display: "block",
+        transform: pulse ? "scale(0.95)" : selected ? "scale(0.95)" : "scale(1)",
+        transition: "transform 200ms ease, border-color 150ms ease",
       }}
     >
       {visible && (
@@ -343,29 +401,28 @@ function LazyCell({ item, onOpen }: { item: Item; onOpen: () => void }) {
         </>
       )}
 
-      {/* Selection checkbox top-right (on hover or checked) */}
+      {/* Selection checkbox top-left */}
       <span
-        onClick={(e) => { e.stopPropagation(); setChecked((c) => !c); }}
+        onClick={(e) => { e.stopPropagation(); onToggle(); }}
         style={{
           position: "absolute",
           top: 8,
-          right: 8,
+          left: 8,
           height: 22,
           width: 22,
           borderRadius: 999,
-          border: "1.5px solid rgba(255,255,255,0.9)",
-          background: checked ? "#4d90fe" : "rgba(0,0,0,0.25)",
-          opacity: hover || checked ? 1 : 0,
+          border: selected ? "none" : "2px solid rgba(255,255,255,0.6)",
+          background: selected ? "#4d90fe" : "transparent",
+          opacity: showCheckbox ? 1 : 0,
           transition: "opacity 200ms ease, background 200ms ease",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 12,
-          color: "#fff",
           cursor: "pointer",
+          boxShadow: selected ? "0 0 0 2px rgba(0,0,0,0.25)" : "0 1px 3px rgba(0,0,0,0.4)",
         }}
       >
-        {checked ? "✓" : ""}
+        {selected && <CheckMark />}
       </span>
     </button>
   );
