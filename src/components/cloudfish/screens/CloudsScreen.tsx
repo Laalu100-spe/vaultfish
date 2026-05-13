@@ -77,43 +77,120 @@ export function CloudsScreen() {
       })}
 
       {modal && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-end md:items-center justify-center p-4" onClick={() => setModal(null)}>
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">Disconnect account?</h3>
-            <p className="text-sm text-muted mt-1">{modal.email}</p>
-            <div className="mt-4 p-3 rounded-xl bg-[color:var(--color-amber)]/10 border border-[color:var(--color-amber)]/30 flex gap-2 text-sm">
-              <AlertTriangle size={18} strokeWidth={1.5} className="text-[color:var(--color-amber)] shrink-0" />
-              <span><b>{modal.gb} GB</b> of data on this account. Choose what to do with the files.</span>
+        <>
+          <div
+            className="vf-modal-backdrop"
+            onClick={() => setModal(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 9998 }}
+          />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="vf-modal-card"
+            style={{
+              position: "fixed", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 9999, width: "90%", maxWidth: 360,
+              background: "rgba(14,17,24,0.97)",
+              backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 20, padding: 24,
+              fontFamily: '"Inter", sans-serif',
+              boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
+            }}
+          >
+            {/* Account info row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <PlatformIcon name={platform} size={20} />
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{modal.email}</span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>· {modal.gb} GB</span>
+              </div>
             </div>
-            <div className="mt-4 space-y-2">
-              {[
-                { id: "move", t: "Move files", d: "Transfer to another cloud" },
-                { id: "copy", t: "Copy files, keep original", d: "Duplicate files elsewhere" },
-                { id: "disconnect", t: "Just disconnect", d: "Files stay on the cloud" },
-              ].map(o => (
-                <label key={o.id} className={`block p-3 rounded-xl border cursor-pointer ${choice === o.id ? "border-[color:var(--accent-blue)] bg-[color:var(--accent-blue)]/10" : "border-border"}`}>
-                  <div className="flex items-start gap-3">
-                    <input type="radio" name="c" checked={choice === o.id} onChange={() => setChoice(o.id as any)} className="mt-1 accent-[color:var(--accent-blue)]" />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{o.t}</div>
-                      <div className="text-xs text-muted">{o.d}</div>
-                      {o.id === "move" && choice === "move" && (
-                        <select value={dest} onChange={e => setDest(e.target.value)} className="mt-2 w-full bg-background border border-border rounded-lg px-3 py-1.5 text-sm">
-                          <option>Dropbox</option><option>OneDrive</option><option>Google Drive</option>
+
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 12, lineHeight: 1.45 }}>
+              This account has {modal.gb} GB of files. What would you like to do with them?
+            </p>
+
+            <div style={{ marginTop: 16 }}>
+              {([
+                { id: "move" as const, t: "Move files", d: "Transfer to another connected account", Icon: FolderInput, color: "#4d90fe", titleColor: "#fff" },
+                { id: "copy" as const, t: "Copy files (keep original)", d: "Duplicate to another cloud, original stays", Icon: Copy, color: "#a78bfa", titleColor: "#fff" },
+                { id: "disconnect" as const, t: "Just disconnect", d: "Files stay in the cloud but leave VaultFish", Icon: LogOut, color: "#6b7280", titleColor: "rgba(255,255,255,0.7)" },
+              ]).map(o => {
+                const selected = choice === o.id;
+                return (
+                  <div
+                    key={o.id}
+                    onClick={() => setChoice(o.id)}
+                    style={{
+                      background: selected ? "rgba(77,144,254,0.08)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${selected ? "#4d90fe" : "rgba(255,255,255,0.07)"}`,
+                      borderRadius: 12, padding: "14px 16px", marginBottom: 8,
+                      cursor: "pointer", transition: "all 150ms ease",
+                      display: "flex", gap: 12, alignItems: "flex-start",
+                    }}
+                  >
+                    <o.Icon size={18} strokeWidth={1.5} color={o.color} style={{ marginTop: 1, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: o.titleColor }}>{o.t}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{o.d}</div>
+                      {selected && (o.id === "move" || o.id === "copy") && otherAccounts.length > 0 && (
+                        <select
+                          value={dest}
+                          onChange={(e) => setDest(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            marginTop: 10, width: "100%",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: 8, padding: "8px 12px",
+                            fontSize: 12, color: "#fff",
+                            fontFamily: '"Inter", sans-serif',
+                          }}
+                        >
+                          {otherAccounts.map(a => {
+                            const v = `${a.platform} · ${a.email}`;
+                            return <option key={a.id} value={v} style={{ background: "#0e1118" }}>{v}</option>;
+                          })}
                         </select>
                       )}
                     </div>
                   </div>
-                </label>
-              ))}
+                );
+              })}
             </div>
-            <div className="mt-5 flex gap-2">
-              <button onClick={() => setModal(null)} className="flex-1 px-4 py-2.5 rounded-lg border border-border text-sm">Cancel</button>
-              <button onClick={() => setModal(null)} className="flex-1 px-4 py-2.5 rounded-lg bg-[color:var(--accent-blue)] text-white text-sm font-medium">{cta}</button>
+
+            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+              <button
+                onClick={() => setModal(null)}
+                style={{
+                  flex: 1, height: 44, borderRadius: 10,
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.6)",
+                  fontFamily: '"Inter", sans-serif', cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setModal(null)}
+                style={{
+                  flex: 1, height: 44, borderRadius: 10,
+                  background: choice === "disconnect" ? "#ef4444" : "#4d90fe",
+                  border: "none",
+                  fontSize: 13, fontWeight: 600, color: "#fff",
+                  fontFamily: '"Inter", sans-serif', cursor: "pointer",
+                  transition: "background 150ms ease",
+                }}
+              >
+                {cta}
+              </button>
             </div>
           </div>
-        </div>
+        </>
       )}
+
     </div>
   );
 }
