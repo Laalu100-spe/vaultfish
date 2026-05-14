@@ -128,8 +128,7 @@ export function SettingsScreen() {
                   </span>
                   <button
                     onClick={() => {
-                      setDisconnectId(a.id);
-                      setConfirm("disconnect");
+                      setDisconnectTarget({ id: a.id, email: a.email, gb: a.used, platform: a.platform });
                     }}
                     style={{
                       fontFamily: '"Inter", sans-serif',
