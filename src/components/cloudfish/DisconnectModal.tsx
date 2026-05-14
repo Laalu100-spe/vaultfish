@@ -163,6 +163,8 @@ export function DisconnectModal({
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
+
+  return createPortal(content, document.body);
 }
