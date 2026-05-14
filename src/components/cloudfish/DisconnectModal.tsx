@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { FolderInput, Copy, LogOut } from "lucide-react";
 import { PlatformIcon } from "./PlatformIcons";
 import { ACCOUNTS } from "./data";
