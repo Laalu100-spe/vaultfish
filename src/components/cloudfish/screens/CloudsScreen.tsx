@@ -1,37 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, SectionTitle, Bar } from "../ui";
 import { ACCOUNTS } from "../data";
-import { Plus, X, FolderInput, Copy, LogOut } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
-
-
-type Modal = { id: string; email: string; gb: number } | null;
+import { DisconnectModal, type DisconnectTarget } from "../DisconnectModal";
 
 export function CloudsScreen() {
-  const [modal, setModal] = useState<Modal>(null);
-  const [choice, setChoice] = useState<"move"|"copy"|"disconnect">("move");
-  const acct = modal ? ACCOUNTS.find(a => a.id === modal.id) : undefined;
-  const platform = acct?.platform ?? "Google Drive";
-  const otherAccounts = ACCOUNTS.filter(a => a.id !== modal?.id);
-  const [dest, setDest] = useState<string>("");
-
-  useEffect(() => {
-    if (modal) {
-      setChoice("move");
-      setDest(otherAccounts[0] ? `${otherAccounts[0].platform} · ${otherAccounts[0].email}` : "");
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modal?.id]);
-
-  useEffect(() => {
-    if (!modal) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setModal(null); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [modal]);
-
+  const [modal, setModal] = useState<DisconnectTarget | null>(null);
   const platforms = ["Google Drive", "Dropbox", "OneDrive"];
-  const cta = choice === "move" ? "Move & Disconnect" : choice === "copy" ? "Copy & Disconnect" : "Disconnect";
 
 
   return (
