@@ -3,6 +3,7 @@ import { Card, SectionTitle, Toggle } from "../ui";
 import { ACCOUNTS } from "../data";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 import { Modal, ModalButton } from "../Modal";
+import { DisconnectModal, type DisconnectTarget } from "../DisconnectModal";
 import { ChevronRight, Info } from "lucide-react";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
