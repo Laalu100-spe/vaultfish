@@ -44,23 +44,24 @@ export function DisconnectModal({
   if (!target) return null;
   const cta = choice === "move" ? "Move & Disconnect" : choice === "copy" ? "Copy & Disconnect" : "Disconnect";
 
-  return (
-    <>
-      <div
-        onClick={onClose}
-        style={{
-          position: "fixed", inset: 0,
-          background: "rgba(0,0,0,0.75)",
-          backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-          zIndex: 9998,
-        }}
-      />
+  if (typeof document === "undefined") return null;
+
+  const content = (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", top: 0, left: 0,
+        width: "100vw", height: "100vh",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "rgba(0,0,0,0.75)",
+        backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+        zIndex: 9999, padding: 16,
+      }}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          position: "fixed", top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 9999, width: "90%", maxWidth: 360,
+          position: "relative", width: "90%", maxWidth: 380,
           maxHeight: "90vh", overflowY: "auto",
           background: "rgba(14,17,24,0.97)",
           backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
