@@ -75,7 +75,7 @@ function Index() {
           )}
           {screen === "upload" && (
             <WithSkeleton skeleton={<GenericSkeleton />}>
-              <UploadScreen />
+              <UploadScreen autoOpen />
             </WithSkeleton>
           )}
           {screen === "analytics" && (

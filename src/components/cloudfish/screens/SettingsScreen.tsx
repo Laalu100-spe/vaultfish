@@ -3,6 +3,7 @@ import { Card, SectionTitle, Toggle } from "../ui";
 import { ACCOUNTS } from "../data";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 import { Modal, ModalButton } from "../Modal";
+import { DisconnectModal, type DisconnectTarget } from "../DisconnectModal";
 import { ChevronRight, Info } from "lucide-react";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -72,7 +73,7 @@ function Select({
   );
 }
 
-type ConfirmKind = "encryption" | "twofa" | "disconnect" | null;
+type ConfirmKind = "encryption" | "twofa" | null;
 
 export function SettingsScreen() {
   // Security
@@ -97,7 +98,7 @@ export function SettingsScreen() {
 
   // Modals
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
-  const [disconnectId, setDisconnectId] = useState<string | null>(null);
+  const [disconnectTarget, setDisconnectTarget] = useState<DisconnectTarget | null>(null);
   const [accounts, setAccounts] = useState(ACCOUNTS);
   const [clearedNotice, setClearedNotice] = useState(false);
 
@@ -127,8 +128,7 @@ export function SettingsScreen() {
                   </span>
                   <button
                     onClick={() => {
-                      setDisconnectId(a.id);
-                      setConfirm("disconnect");
+                      setDisconnectTarget({ id: a.id, email: a.email, gb: a.used, platform: a.platform });
                     }}
                     style={{
                       fontFamily: '"Inter", sans-serif',
@@ -346,28 +346,13 @@ export function SettingsScreen() {
         Add an extra layer of security. You will need a code from your authenticator app to sign in.
       </Modal>
 
-      <Modal
-        open={confirm === "disconnect"}
-        onClose={() => setConfirm(null)}
-        title="Disconnect account"
-        footer={
-          <>
-            <ModalButton onClick={() => setConfirm(null)}>Cancel</ModalButton>
-            <ModalButton
-              variant="danger"
-              onClick={() => {
-                setAccounts((prev) => prev.filter((a) => a.id !== disconnectId));
-                setConfirm(null);
-                setDisconnectId(null);
-              }}
-            >
-              Disconnect
-            </ModalButton>
-          </>
-        }
-      >
-        VaultFish will stop syncing this account. You can reconnect later from this screen.
-      </Modal>
+      <DisconnectModal
+        target={disconnectTarget}
+        onClose={() => setDisconnectTarget(null)}
+        onConfirm={(id) => {
+          setAccounts((prev) => prev.filter((a) => a.id !== id));
+        }}
+      />
 
       <Modal
         open={clearedNotice}
