@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 export function Modal({
   open,
@@ -30,15 +31,23 @@ export function Modal({
   }, [open, onClose]);
 
   if (!open) return null;
-  return (
+  if (typeof document === "undefined") return null;
+  const node = (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-      style={{ background: "rgba(2,4,10,0.55)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+      style={{
+        position: "fixed", top: 0, left: 0,
+        width: "100vw", height: "100vh",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 9999, padding: 16,
+        background: "rgba(2,4,10,0.55)",
+        backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+      }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
+          position: "relative",
           width: "100%",
           maxWidth: width,
           background: "rgba(15,18,28,0.95)",
@@ -63,6 +72,7 @@ export function Modal({
       </div>
     </div>
   );
+  return createPortal(node, document.body);
 }
 
 export function ModalButton({
