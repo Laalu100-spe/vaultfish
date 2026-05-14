@@ -38,7 +38,7 @@ export function CloudsScreen() {
                         <span>{pct}%</span>
                       </div>
                     </div>
-                    <button onClick={() => setModal({ id: a.id, email: a.email, gb: a.used })} className="p-2 rounded-lg hover:bg-background text-muted hover:text-foreground">
+                    <button onClick={() => setModal({ id: a.id, email: a.email, gb: a.used, platform: a.platform })} className="p-2 rounded-lg hover:bg-background text-muted hover:text-foreground">
                       <X size={18} strokeWidth={1.5} />
                     </button>
                   </Card>
