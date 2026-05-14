@@ -98,7 +98,7 @@ export function SettingsScreen() {
 
   // Modals
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
-  const [disconnectId, setDisconnectId] = useState<string | null>(null);
+  const [disconnectTarget, setDisconnectTarget] = useState<DisconnectTarget | null>(null);
   const [accounts, setAccounts] = useState(ACCOUNTS);
   const [clearedNotice, setClearedNotice] = useState(false);
 
