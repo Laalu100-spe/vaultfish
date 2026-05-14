@@ -73,7 +73,7 @@ function Select({
   );
 }
 
-type ConfirmKind = "encryption" | "twofa" | "disconnect" | null;
+type ConfirmKind = "encryption" | "twofa" | null;
 
 export function SettingsScreen() {
   // Security
