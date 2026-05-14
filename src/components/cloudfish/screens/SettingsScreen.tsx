@@ -346,28 +346,13 @@ export function SettingsScreen() {
         Add an extra layer of security. You will need a code from your authenticator app to sign in.
       </Modal>
 
-      <Modal
-        open={confirm === "disconnect"}
-        onClose={() => setConfirm(null)}
-        title="Disconnect account"
-        footer={
-          <>
-            <ModalButton onClick={() => setConfirm(null)}>Cancel</ModalButton>
-            <ModalButton
-              variant="danger"
-              onClick={() => {
-                setAccounts((prev) => prev.filter((a) => a.id !== disconnectId));
-                setConfirm(null);
-                setDisconnectId(null);
-              }}
-            >
-              Disconnect
-            </ModalButton>
-          </>
-        }
-      >
-        VaultFish will stop syncing this account. You can reconnect later from this screen.
-      </Modal>
+      <DisconnectModal
+        target={disconnectTarget}
+        onClose={() => setDisconnectTarget(null)}
+        onConfirm={(id) => {
+          setAccounts((prev) => prev.filter((a) => a.id !== id));
+        }}
+      />
 
       <Modal
         open={clearedNotice}
