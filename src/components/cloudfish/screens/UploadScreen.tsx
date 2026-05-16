@@ -3,6 +3,8 @@ import { Card, SectionTitle, Toggle } from "../ui";
 import { UploadCloud, Pause, Check } from "lucide-react";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 import { ACCOUNTS } from "../data";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 function formatSize(bytes: number) {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
@@ -14,6 +16,7 @@ function formatSize(bytes: number) {
 type Stage = "idle" | "uploading" | "done";
 
 export function UploadScreen({ autoOpen = false }: { autoOpen?: boolean }) {
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [smart, setSmart] = useState(true);
@@ -63,10 +66,24 @@ export function UploadScreen({ autoOpen = false }: { autoOpen?: boolean }) {
       const t = setTimeout(() => setCurrentIdx((i) => i + 1), 500);
       return () => clearTimeout(t);
     } else {
-      const t = setTimeout(() => setStage("done"), 400);
+      const t = setTimeout(async () => {
+        // Persist uploaded file metadata to Supabase
+        if (user && files.length > 0) {
+          const rows = files.map((f) => ({
+            user_id: user.id,
+            file_name: f.name,
+            file_size: f.size,
+            file_type: f.type || f.name.split(".").pop() || "file",
+            cloud_path: `/${destination}/${f.name}`,
+            last_modified: new Date(f.lastModified).toISOString(),
+          }));
+          await supabase.from("file_metadata").insert(rows);
+        }
+        setStage("done");
+      }, 400);
       return () => clearTimeout(t);
     }
-  }, [pct, stage, currentIdx, files.length]);
+  }, [pct, stage, currentIdx, files, user, destination]);
 
   const reset = () => {
     setStage("idle");
