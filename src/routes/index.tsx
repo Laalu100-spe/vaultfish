@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Layout, type ScreenId } from "@/components/cloudfish/Layout";
 import { HomeScreen } from "@/components/cloudfish/screens/HomeScreen";
 import { CloudsScreen } from "@/components/cloudfish/screens/CloudsScreen";
@@ -20,6 +20,9 @@ import {
   AnalyticsSkeleton,
   GenericSkeleton,
 } from "@/components/cloudfish/Skeleton";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { PreferencesProvider } from "@/context/PreferencesContext";
+import { Toaster } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,66 +35,68 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  return (
+    <AuthProvider>
+      <PreferencesProvider>
+        <Toaster position="top-center" theme="dark" />
+        <AuthedApp />
+      </PreferencesProvider>
+    </AuthProvider>
+  );
+}
+
+function AuthedApp() {
+  const { session, loading } = useAuth();
   const [screen, setScreen] = useState<ScreenId>("home");
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [appLoading, setAppLoading] = useState(true);
 
-  useEffect(() => {
-    setHydrated(true);
-    try {
-      if (!localStorage.getItem("vaultfish_onboarded")) setShowOnboarding(true);
-    } catch {}
-  }, []);
+  if (loading) {
+    return (
+      <div
+        style={{
+          position: "fixed", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "#0b1020", color: "#4d90fe",
+          fontFamily: '"Inter", sans-serif', fontSize: 14,
+        }}
+      >
+        Loading…
+      </div>
+    );
+  }
 
-  if (hydrated && showOnboarding) {
-    return <Onboarding onDone={() => setShowOnboarding(false)} />;
+  if (!session) {
+    return <Onboarding onDone={() => { /* signs in within onboarding */ }} />;
   }
 
   return (
     <>
-      {loading && <LoadingOverlay onDone={() => setLoading(false)} />}
+      {appLoading && <LoadingOverlay onDone={() => setAppLoading(false)} />}
       <Layout current={screen} onNavigate={setScreen}>
         <div key={screen} className="vf-screen-in">
           {screen === "home" && (
-            <WithSkeleton skeleton={<HomeSkeleton />}>
-              <HomeScreen onNav={setScreen} />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<HomeSkeleton />}><HomeScreen onNav={setScreen} /></WithSkeleton>
           )}
           {screen === "clouds" && (
-            <WithSkeleton skeleton={<CloudsSkeleton />}>
-              <CloudsScreen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<CloudsSkeleton />}><CloudsScreen /></WithSkeleton>
           )}
           {screen === "files" && (
-            <WithSkeleton skeleton={<FilesSkeleton />}>
-              <FilesScreen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<FilesSkeleton />}><FilesScreen /></WithSkeleton>
           )}
           {screen === "gallery" && (
-            <WithSkeleton skeleton={<GallerySkeleton />}>
-              <GalleryScreen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<GallerySkeleton />}><GalleryScreen /></WithSkeleton>
           )}
           {screen === "upload" && (
-            <WithSkeleton skeleton={<GenericSkeleton />}>
-              <UploadScreen autoOpen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<GenericSkeleton />}><UploadScreen autoOpen /></WithSkeleton>
           )}
           {screen === "analytics" && (
-            <WithSkeleton skeleton={<AnalyticsSkeleton />}>
-              <AnalyticsScreen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<AnalyticsSkeleton />}><AnalyticsScreen /></WithSkeleton>
           )}
           {screen === "clean" && (
-            <WithSkeleton skeleton={<GenericSkeleton />}>
-              <CleanScreen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<GenericSkeleton />}><CleanScreen /></WithSkeleton>
           )}
           {screen === "settings" && (
-            <WithSkeleton skeleton={<GenericSkeleton />}>
-              <SettingsScreen />
-            </WithSkeleton>
+            <WithSkeleton skeleton={<GenericSkeleton />}><SettingsScreen /></WithSkeleton>
           )}
         </div>
       </Layout>
