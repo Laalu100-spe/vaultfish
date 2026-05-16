@@ -14,7 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      connected_accounts: {
+        Row: {
+          connected_at: string
+          display_name: string | null
+          email: string
+          id: string
+          is_active: boolean
+          platform: string
+          storage_total: number
+          storage_used: number
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string
+          display_name?: string | null
+          email: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          storage_total?: number
+          storage_used?: number
+          user_id: string
+        }
+        Update: {
+          connected_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          storage_total?: number
+          storage_used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      file_metadata: {
+        Row: {
+          account_id: string | null
+          cloud_path: string | null
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string | null
+          id: string
+          is_duplicate: boolean
+          last_modified: string
+          thumbnail_url: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          cloud_path?: string | null
+          created_at?: string
+          file_name: string
+          file_size?: number
+          file_type?: string | null
+          id?: string
+          is_duplicate?: boolean
+          last_modified?: string
+          thumbnail_url?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          cloud_path?: string | null
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string | null
+          id?: string
+          is_duplicate?: boolean
+          last_modified?: string
+          thumbnail_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_metadata_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "connected_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          auto_optimize: boolean
+          compact_view: boolean
+          created_at: string
+          dark_mode: boolean
+          default_upload_destination: string | null
+          encryption_enabled: boolean
+          id: string
+          smart_split: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_optimize?: boolean
+          compact_view?: boolean
+          created_at?: string
+          dark_mode?: boolean
+          default_upload_destination?: string | null
+          encryption_enabled?: boolean
+          id?: string
+          smart_split?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_optimize?: boolean
+          compact_view?: boolean
+          created_at?: string
+          dark_mode?: boolean
+          default_upload_destination?: string | null
+          encryption_enabled?: boolean
+          id?: string
+          smart_split?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
