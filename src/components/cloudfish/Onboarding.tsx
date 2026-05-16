@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 type Provider = "Google Drive" | "Dropbox" | "OneDrive";
 
@@ -188,6 +190,20 @@ function PrimaryBtn({
 }
 
 function ScreenWelcome({ onNext }: { onNext: () => void }) {
+  const { signInWithGoogle } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const handleSignIn = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await signInWithGoogle();
+      // OAuth will redirect; session listener will swap UI on return
+      onNext();
+    } catch (e: any) {
+      toast.error(e?.message || "Sign-in failed");
+      setBusy(false);
+    }
+  };
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, paddingBottom: 80 }}>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}>
@@ -201,9 +217,11 @@ function ScreenWelcome({ onNext }: { onNext: () => void }) {
         </p>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%" }}>
-        <PrimaryBtn onClick={onNext}>Get Started</PrimaryBtn>
+        <PrimaryBtn onClick={handleSignIn} disabled={busy}>
+          {busy ? "Signing in…" : "Continue with Google"}
+        </PrimaryBtn>
         <button
-          onClick={onNext}
+          onClick={handleSignIn}
           style={{ background: "transparent", color: "rgba(255,255,255,0.3)", fontSize: 13, fontFamily: '"Inter", sans-serif' }}
         >
           Already have an account? <span style={{ color: "rgba(255,255,255,0.6)" }}>Sign in</span>

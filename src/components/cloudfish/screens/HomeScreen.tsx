@@ -1,6 +1,7 @@
 import { Card } from "../ui";
 import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, Copy, FileVideo, ChevronRight } from "lucide-react";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
+import { useConnectedAccounts, PLATFORM_LABEL, GB } from "@/hooks/useConnectedAccounts";
 
 const PROVIDER_GRADIENTS: Record<string, string> = {
   "Google Drive": "#4d90fe",
@@ -19,11 +20,22 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
-  const accounts = [
-    { name: "Google Drive", used: 42, total: 100 },
-    { name: "Dropbox", used: 14, total: 25 },
-    { name: "OneDrive", used: 18, total: 25 },
-  ];
+  const { accounts: connected } = useConnectedAccounts();
+
+  // Aggregate per-platform from real data
+  const accounts = (["google_drive", "dropbox", "onedrive"] as const)
+    .map((key) => {
+      const label = PLATFORM_LABEL[key];
+      const list = connected.filter((a) => a.platform === key);
+      const used = Math.round(list.reduce((s, a) => s + a.storage_used, 0) / GB);
+      const total = Math.round(list.reduce((s, a) => s + a.storage_total, 0) / GB);
+      return { name: label, used, total };
+    })
+    .filter((a) => a.total > 0);
+
+  const totalUsed = accounts.reduce((s, a) => s + a.used, 0);
+  const totalCap = accounts.reduce((s, a) => s + a.total, 0);
+  const totalPct = totalCap > 0 ? Math.round((totalUsed / totalCap) * 100) : 0;
 
   const quickActions = [
     { i: ArrowUpFromLine, l: "Upload", to: "upload", color: "#4d90fe", bg: "rgba(77,144,254,0.12)" },
@@ -51,14 +63,14 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
             <div>
               <div className="section-label">Total Storage</div>
               <div className="mt-2 flex items-baseline gap-2 leading-none">
-                <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 72, fontWeight: 900, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>74</span>
+                <span style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 72, fontWeight: 900, color: "#ffffff", lineHeight: 1, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>{totalUsed}</span>
                 <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 18, fontWeight: 300, color: "rgba(255,255,255,0.4)", letterSpacing: "-0.02em", lineHeight: 1 }}>GB</span>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.25)", letterSpacing: "-0.01em" }}>/ 150 GB used</span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 400, color: "rgba(255,255,255,0.25)", letterSpacing: "-0.01em" }}>/ {totalCap} GB used</span>
               </div>
             </div>
-            <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontVariantNumeric: "tabular-nums" }}>49%</div>
+            <div style={{ fontFamily: '"Inter Tight", "Inter", sans-serif', fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontVariantNumeric: "tabular-nums" }}>{totalPct}%</div>
           </div>
-          <StorageBar pct={49} fill="linear-gradient(90deg, #a78bfa, #4d90fe, #2dd4bf)" dotColor="#2dd4bf" />
+          <StorageBar pct={totalPct} fill="linear-gradient(90deg, #a78bfa, #4d90fe, #2dd4bf)" dotColor="#2dd4bf" />
           <div className="mt-5 space-y-3.5">
             {accounts.map(a => {
               const pct = Math.round((a.used/a.total)*100);
