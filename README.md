@@ -16,4 +16,4 @@ React · TypeScript · Vite · Supabase · Tailwind CSS · shadcn/ui · Claude A
 Live Demo
 https://voultfish.lovable.app
 Built by
-Talabros Technologies · Kathmandu, Nepal
+Talabros Technologies · Rangeli,Morang district, Nepal
