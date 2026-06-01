@@ -417,3 +417,7 @@
 .vf-modal-backdrop { animation: vfModalBackdrop 180ms ease-out forwards; }
 .vf-modal-card { animation: vfModalPop 220ms cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
+
+@keyframes vfShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@keyframes vfBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.008); } }
+.vf-breath { animation: vfBreath 4s ease-in-out infinite; }
