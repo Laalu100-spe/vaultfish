@@ -56,11 +56,21 @@ function AuthedApp() {
         style={{
           position: "fixed", inset: 0,
           display: "flex", alignItems: "center", justifyContent: "center",
-          background: "#0b1020", color: "#4d90fe",
-          fontFamily: '"Inter", sans-serif', fontSize: 14,
+          background: "#06080f",
+          fontFamily: '"Inter", sans-serif',
         }}
       >
-        Loading…
+        <div
+          style={{
+            display: "flex", alignItems: "baseline",
+            fontSize: 36, lineHeight: 1, letterSpacing: "-0.03em",
+            animation: "vfAuthPulse 1.6s ease-in-out infinite",
+          }}
+        >
+          <span style={{ fontWeight: 300, color: "#ffffff" }}>Vault</span>
+          <span style={{ fontWeight: 800, color: "#4d90fe" }}>Fish</span>
+        </div>
+        <style>{`@keyframes vfAuthPulse{0%,100%{opacity:.55;transform:scale(.98)}50%{opacity:1;transform:scale(1)}}`}</style>
       </div>
     );
   }
