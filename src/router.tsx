@@ -3,6 +3,7 @@ import { routeTree } from "./routeTree.gen";
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const isBackendConfigError = error.message.includes("Missing Supabase environment variable");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -23,9 +24,13 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Something went wrong</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          {isBackendConfigError ? "Backend setup required" : "Something went wrong"}
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          An unexpected error occurred. Please try again.
+          {isBackendConfigError
+            ? "VaultFish needs its managed backend connection restored before it can open."
+            : "An unexpected error occurred. Please try again."}
         </p>
         {import.meta.env.DEV && error.message && (
           <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-muted p-3 text-left font-mono text-xs text-destructive">
