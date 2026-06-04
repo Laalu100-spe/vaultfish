@@ -441,8 +441,8 @@ function PhotoFrame({ photo }: { photo: Photo }) {
         draggable={false}
         style={{
           maxWidth: "100%", maxHeight: "100%", objectFit: "contain",
-          userSelect: "none", WebkitUserDrag: "none" as any,
-        }}
+          userSelect: "none",
+        } as any}
       />
     </div>
   );
