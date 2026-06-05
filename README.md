@@ -14,6 +14,6 @@ Real-time sync with Supabase
 Tech Stack
 React · TypeScript · Vite · Supabase · Tailwind CSS · shadcn/ui · Claude API
 Live Demo
-https://vaultfish.lovable.app/# 
+https://voultfish.lovable.app
 Built by
 Talabros Technologies · Rangeli,Morang district, Nepal
