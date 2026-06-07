@@ -248,7 +248,7 @@ export function GalleryScreen() {
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     scale: nextScale,
-                    filter: useTransform(nextBlur, (v) => `blur(${v}) brightness(0.6)`),
+                    filter: nextFilter,
                   }}
                 />
               )}
