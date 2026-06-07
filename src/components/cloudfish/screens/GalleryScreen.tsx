@@ -74,9 +74,9 @@ export function GalleryScreen() {
     "blur(5px) brightness(0.6)",
   ]);
   const nextScale = useTransform(x, [-slideStep, 0], [1, 0.88]);
-  const nextBlur = useTransform(x, [-slideStep, 0], ["0px", "8px"]);
+  const nextFilter = useTransform(x, [-slideStep, 0], ["blur(0px) brightness(0.7)", "blur(8px) brightness(0.6)"]);
   const prevScale = useTransform(x, [0, slideStep], [0.88, 1]);
-  const prevBlur = useTransform(x, [0, slideStep], ["8px", "0px"]);
+  const prevFilter = useTransform(x, [0, slideStep], ["blur(8px) brightness(0.6)", "blur(0px) brightness(0.7)"]);
 
   const bgColor = useTransform(
     x,
