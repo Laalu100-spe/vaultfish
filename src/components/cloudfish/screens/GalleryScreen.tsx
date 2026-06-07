@@ -68,8 +68,11 @@ export function GalleryScreen() {
 
   // Transforms for liquid swiping
   const currentScale = useTransform(x, [-slideStep, 0, slideStep], [0.9, 1, 0.9]);
-  const currentBlur = useTransform(x, [-slideStep, 0, slideStep], ["5px", "0px", "5px"]);
-  const currentBright = useTransform(x, [-slideStep, 0, slideStep], [0.6, 1, 0.6]);
+  const currentFilter = useTransform(x, [-slideStep, 0, slideStep], [
+    "blur(5px) brightness(0.6)",
+    "blur(0px) brightness(1)",
+    "blur(5px) brightness(0.6)",
+  ]);
   const nextScale = useTransform(x, [-slideStep, 0], [1, 0.88]);
   const nextBlur = useTransform(x, [-slideStep, 0], ["0px", "8px"]);
   const prevScale = useTransform(x, [0, slideStep], [0.88, 1]);
