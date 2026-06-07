@@ -297,7 +297,7 @@ export function GalleryScreen() {
                         onPhotoTap(e);
                       }}
                       style={{
-                        filter: useTransform([currentBlur, currentBright], ([b, br]: any) => `blur(${b}) brightness(${br})`),
+                        filter: currentFilter,
                       }}
                     />
                   </motion.div>
