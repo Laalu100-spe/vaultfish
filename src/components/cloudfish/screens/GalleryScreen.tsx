@@ -181,6 +181,8 @@ export function GalleryScreen() {
         >
           <button
             className="vf-fullscreen-back"
+            onMouseDown={(event) => event.stopPropagation()}
+            onTouchStart={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
               closeFullscreen();
