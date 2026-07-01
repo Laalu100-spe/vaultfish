@@ -443,6 +443,7 @@ export function GalleryScreen() {
           bottom: 0;
           z-index: 9998;
           height: 70px;
+          box-sizing: border-box;
           display: flex;
           align-items: center;
           gap: 6px;
