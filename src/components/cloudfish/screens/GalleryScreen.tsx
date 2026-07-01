@@ -1,530 +1,817 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { ChevronLeft, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 type Photo = {
   id: string;
   url: string;
   alt: string;
+  aspectRatio: number;
 };
 
 const PHOTOS: Photo[] = [
-  "https://picsum.photos/seed/1/400/500",
-  "https://picsum.photos/seed/2/400/600",
-  "https://picsum.photos/seed/3/500/400",
-  "https://picsum.photos/seed/4/400/500",
-  "https://picsum.photos/seed/5/600/400",
-  "https://picsum.photos/seed/6/400/500",
-  "https://picsum.photos/seed/7/400/600",
-  "https://picsum.photos/seed/8/500/400",
-  "https://picsum.photos/seed/9/400/500",
-  "https://picsum.photos/seed/10/600/400",
-  "https://picsum.photos/seed/11/400/500",
-  "https://picsum.photos/seed/12/400/600",
-].map((url, index) => ({ id: `photo-${index + 1}`, url, alt: `VaultFish photo ${index + 1}` }));
+  { id: 'photo-1', url: 'https://picsum.photos/id/1015/800/1200', alt: 'Mountain landscape at dusk', aspectRatio: 800 / 1200 },
+  { id: 'photo-2', url: 'https://picsum.photos/id/1005/1200/800', alt: 'Ocean sunset', aspectRatio: 1200 / 800 },
+  { id: 'photo-3', url: 'https://picsum.photos/id/1016/800/1000', alt: 'Forest path', aspectRatio: 800 / 1000 },
+  { id: 'photo-4', url: 'https://picsum.photos/id/1033/1000/800', alt: 'City skyline', aspectRatio: 1000 / 800 },
+  { id: 'photo-5', url: 'https://picsum.photos/id/1040/800/1100', alt: 'Desert dunes', aspectRatio: 800 / 1100 },
+  { id: 'photo-6', url: 'https://picsum.photos/id/106/1200/900', alt: 'Lake reflection', aspectRatio: 1200 / 900 },
+  { id: 'photo-7', url: 'https://picsum.photos/id/1074/900/1200', alt: 'Snowy mountains', aspectRatio: 900 / 1200 },
+  { id: 'photo-8', url: 'https://picsum.photos/id/1080/1100/800', alt: 'Waterfall', aspectRatio: 1100 / 800 },
+  { id: 'photo-9', url: 'https://picsum.photos/id/1009/800/1000', alt: 'Coastal cliffs', aspectRatio: 800 / 1000 },
+  { id: 'photo-10', url: 'https://picsum.photos/id/1018/1200/850', alt: 'Autumn forest', aspectRatio: 1200 / 850 },
+  { id: 'photo-11', url: 'https://picsum.photos/id/1036/900/1100', alt: 'Starry night', aspectRatio: 900 / 1100 },
+  { id: 'photo-12', url: 'https://picsum.photos/id/1043/1000/900', alt: 'Urban street', aspectRatio: 1000 / 900 },
+];
 
-const SWIPE_THRESHOLD = 60;
-const DISMISS_THRESHOLD = 80;
-const ANIMATION_MS = 280;
+const SWIPE_THRESHOLD = 80;
+const DISMISS_THRESHOLD = 120;
+const MAX_ZOOM = 8;
+const MIN_ZOOM = 0.5;
+const DOUBLE_TAP_ZOOM = 3;
+
+interface GestureState {
+  pointers: Map<number, { x: number; y: number }>;
+  initialDistance: number | null;
+  initialScale: number;
+  initialOffset: { x: number; y: number };
+}
 
 export function GalleryScreen() {
-  const [selected, setSelected] = useState<number | null>(null);
-  const [outgoing, setOutgoing] = useState<{ index: number; direction: 1 | -1 } | null>(null);
-  const [incomingDirection, setIncomingDirection] = useState<1 | -1 | null>(null);
-  const [drag, setDrag] = useState({ x: 0, y: 0 });
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionRect, setTransitionRect] = useState<DOMRect | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isDismissing, setIsDismissing] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+
   const dragStart = useRef({ x: 0, y: 0 });
-  const mouseActive = useRef(false);
-  const transitionTimer = useRef<number | null>(null);
-  const closeTimer = useRef<number | null>(null);
+  const velocityRef = useRef({ x: 0, y: 0 });
+  const lastMoveTime = useRef(0);
+  const lastPosition = useRef({ x: 0, y: 0 });
   const stripRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const gestureState = useRef<GestureState>({
+    pointers: new Map(),
+    initialDistance: null,
+    initialScale: 1,
+    initialOffset: { x: 0, y: 0 },
+  });
+  const animationFrame = useRef<number | null>(null);
+  const transitionTimeout = useRef<number | null>(null);
 
-  const current = selected === null ? null : PHOTOS[selected];
-  const previous = selected !== null && selected > 0 ? PHOTOS[selected - 1] : null;
-  const next = selected !== null && selected < PHOTOS.length - 1 ? PHOTOS[selected + 1] : null;
+  const currentPhoto = selectedIndex !== null ? PHOTOS[selectedIndex] : null;
+  const previousPhoto = selectedIndex !== null && selectedIndex > 0 ? PHOTOS[selectedIndex - 1] : null;
+  const nextPhoto = selectedIndex !== null && selectedIndex < PHOTOS.length - 1 ? PHOTOS[selectedIndex + 1] : null;
 
-  const closeFullscreen = () => {
+  // Memoized values
+  const canSwipe = scale === 1 && !isZoomed;
+  const canPan = scale > 1;
+
+  // Close fullscreen with spring animation
+  const closeFullscreen = useCallback(() => {
+    if (selectedIndex === null) return;
+
     setIsDismissing(true);
-    setDrag({ x: 0, y: 28 });
-    if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    closeTimer.current = window.setTimeout(() => {
-      setSelected(null);
-      setOutgoing(null);
-      setIncomingDirection(null);
-      setDrag({ x: 0, y: 0 });
+    setDragOffset({ x: 0, y: 40 });
+
+    // Reset zoom state
+    setScale(1);
+    setOffsetX(0);
+    setOffsetY(0);
+    setIsZoomed(false);
+
+    if (transitionTimeout.current) {
+      window.clearTimeout(transitionTimeout.current);
+    }
+
+    transitionTimeout.current = window.setTimeout(() => {
+      setSelectedIndex(null);
+      setIsTransitioning(false);
+      setTransitionRect(null);
+      setDragOffset({ x: 0, y: 0 });
       setIsDragging(false);
       setIsDismissing(false);
-      mouseActive.current = false;
-    }, 180);
-  };
+      resetGestureState();
+    }, 220);
+  }, [selectedIndex]);
 
-  const navigateTo = (target: number) => {
-    if (selected === null || target === selected || target < 0 || target >= PHOTOS.length) return;
-    const direction: 1 | -1 = target > selected ? 1 : -1;
-    if (transitionTimer.current) window.clearTimeout(transitionTimer.current);
-    setOutgoing({ index: selected, direction });
-    setIncomingDirection(direction);
-    setSelected(target);
-    setDrag({ x: 0, y: 0 });
-    transitionTimer.current = window.setTimeout(() => {
-      setOutgoing(null);
-      setIncomingDirection(null);
-    }, ANIMATION_MS);
-  };
-
-  const navigateBy = (direction: 1 | -1) => {
-    if (selected === null) return;
-    navigateTo(selected + direction);
-  };
-
-  const beginDrag = (x: number, y: number) => {
-    if (selected === null) return;
-    dragStart.current = { x, y };
-    setIsDragging(true);
-    mouseActive.current = true;
-  };
-
-  const updateDrag = (x: number, y: number) => {
-    if (selected === null || !mouseActive.current || outgoing || isDismissing) return;
-    const dx = x - dragStart.current.x;
-    const dy = y - dragStart.current.y;
-    if (dy > 0 && Math.abs(dy) > Math.abs(dx) * 0.75) {
-      setDrag({ x: 0, y: dy });
+  // Navigate to specific photo
+  const navigateTo = useCallback((targetIndex: number) => {
+    if (
+      selectedIndex === null ||
+      targetIndex === selectedIndex ||
+      targetIndex < 0 ||
+      targetIndex >= PHOTOS.length
+    ) {
       return;
     }
-    setDrag({ x: dx, y: 0 });
-  };
 
-  const finishDrag = (x: number, y: number) => {
-    if (selected === null || !mouseActive.current) return;
-    mouseActive.current = false;
-    setIsDragging(false);
-    const deltaX = dragStart.current.x - x;
-    const deltaY = y - dragStart.current.y;
-    if (deltaY > DISMISS_THRESHOLD && deltaY > Math.abs(deltaX)) {
-      closeFullscreen();
-      return;
-    }
-    if (deltaX > SWIPE_THRESHOLD && selected < PHOTOS.length - 1) {
-      navigateBy(1);
-      return;
-    }
-    if (deltaX < -SWIPE_THRESHOLD && selected > 0) {
-      navigateBy(-1);
-      return;
-    }
-    setDrag({ x: 0, y: 0 });
-  };
+    // Reset zoom on navigation
+    setScale(1);
+    setOffsetX(0);
+    setOffsetY(0);
+    setIsZoomed(false);
+    setDragOffset({ x: 0, y: 0 });
 
-  useEffect(() => {
-    if (selected === null) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeFullscreen();
-      if (event.key === "ArrowRight") navigateBy(1);
-      if (event.key === "ArrowLeft") navigateBy(-1);
+    setSelectedIndex(targetIndex);
+
+    // Auto-center thumbnail
+    requestAnimationFrame(() => {
+      if (stripRef.current) {
+        const activeThumb = stripRef.current.querySelector(
+          `[data-photo-index="${targetIndex}"]`
+        ) as HTMLElement | null;
+        activeThumb?.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest',
+        });
+      }
+    });
+  }, [selectedIndex]);
+
+  const navigateBy = useCallback(
+    (direction: 1 | -1) => {
+      if (selectedIndex === null) return;
+      navigateTo(selectedIndex + direction);
+    },
+    [selectedIndex, navigateTo]
+  );
+
+  // Reset gesture state
+  const resetGestureState = () => {
+    gestureState.current = {
+      pointers: new Map(),
+      initialDistance: null,
+      initialScale: 1,
+      initialOffset: { x: 0, y: 0 },
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  };
 
+  // Calculate bounds for panning when zoomed
+  const getPanBounds = useCallback(() => {
+    if (!viewerRef.current || !imageRef.current) {
+      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    }
+
+    const container = viewerRef.current.getBoundingClientRect();
+    const img = imageRef.current;
+
+    // Natural dimensions
+    const naturalWidth = img.naturalWidth || 800;
+    const naturalHeight = img.naturalHeight || 600;
+
+    const containerWidth = container.width;
+    const containerHeight = container.height;
+
+    const scaledWidth = naturalWidth * scale;
+    const scaledHeight = naturalHeight * scale;
+
+    const overflowX = Math.max(0, scaledWidth - containerWidth);
+    const overflowY = Math.max(0, scaledHeight - containerHeight);
+
+    return {
+      minX: -overflowX / 2,
+      maxX: overflowX / 2,
+      minY: -overflowY / 2,
+      maxY: overflowY / 2,
+    };
+  }, [scale]);
+
+  // Apply pan with resistance
+  const applyPan = useCallback((dx: number, dy: number) => {
+    const bounds = getPanBounds();
+    const newX = Math.max(bounds.minX, Math.min(bounds.maxX, offsetX + dx));
+    const newY = Math.max(bounds.minY, Math.min(bounds.maxY, offsetY + dy));
+
+    setOffsetX(newX);
+    setOffsetY(newY);
+  }, [offsetX, offsetY, getPanBounds]);
+
+  // Handle pinch to zoom
+  const handlePinch = useCallback((pointers: Map<number, { x: number; y: number }>) => {
+    if (pointers.size !== 2) return;
+
+    const [p1, p2] = Array.from(pointers.values());
+    const currentDistance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+    if (!gestureState.current.initialDistance) {
+      gestureState.current.initialDistance = currentDistance;
+      gestureState.current.initialScale = scale;
+      gestureState.current.initialOffset = { x: offsetX, y: offsetY };
+      return;
+    }
+
+    const scaleFactor = currentDistance / gestureState.current.initialDistance;
+    const newScale = Math.max(
+      MIN_ZOOM,
+      Math.min(MAX_ZOOM, gestureState.current.initialScale * scaleFactor)
+    );
+
+    // Calculate midpoint for pan
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+
+    const container = viewerRef.current?.getBoundingClientRect();
+    if (!container) return;
+
+    const centerX = container.width / 2;
+    const centerY = container.height / 2;
+
+    // Adjust pan based on pinch center
+    const scaleDiff = newScale - gestureState.current.initialScale;
+    const panAdjustX = (midX - centerX) * (scaleDiff / gestureState.current.initialScale);
+    const panAdjustY = (midY - centerY) * (scaleDiff / gestureState.current.initialScale);
+
+    const newOffsetX = gestureState.current.initialOffset.x - panAdjustX;
+    const newOffsetY = gestureState.current.initialOffset.y - panAdjustY;
+
+    setScale(newScale);
+    setOffsetX(newOffsetX);
+    setOffsetY(newOffsetY);
+    setIsZoomed(newScale > 1.05);
+  }, [scale, offsetX, offsetY]);
+
+  // Pointer event handlers for gestures
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (selectedIndex === null) return;
+
+    const { clientX, clientY, pointerId } = e;
+    gestureState.current.pointers.set(pointerId, { x: clientX, y: clientY });
+
+    if (gestureState.current.pointers.size === 1) {
+      // Start drag
+      dragStart.current = { x: clientX, y: clientY };
+      lastPosition.current = { x: clientX, y: clientY };
+      lastMoveTime.current = Date.now();
+      setIsDragging(true);
+    } else if (gestureState.current.pointers.size === 2) {
+      // Start pinch
+      gestureState.current.initialDistance = null;
+    }
+
+    // Prevent default for touch
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+    }
+  }, [selectedIndex]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (selectedIndex === null || !isDragging) return;
+
+    const { clientX, clientY, pointerId } = e;
+    const currentPointers = gestureState.current.pointers;
+
+    if (!currentPointers.has(pointerId)) return;
+
+    currentPointers.set(pointerId, { x: clientX, y: clientY });
+
+    // Pinch handling
+    if (currentPointers.size === 2) {
+      handlePinch(currentPointers);
+      return;
+    }
+
+    // Single pointer drag
+    const dx = clientX - dragStart.current.x;
+    const dy = clientY - dragStart.current.y;
+
+    const now = Date.now();
+    const dt = now - lastMoveTime.current;
+    if (dt > 0) {
+      velocityRef.current = {
+        x: (clientX - lastPosition.current.x) / dt,
+        y: (clientY - lastPosition.current.y) / dt,
+      };
+    }
+    lastPosition.current = { x: clientX, y: clientY };
+    lastMoveTime.current = now;
+
+    if (canPan) {
+      // Pan the image when zoomed
+      applyPan(dx * 0.8, dy * 0.8);
+    } else if (canSwipe) {
+      // Horizontal swipe or vertical dismiss
+      if (Math.abs(dy) > Math.abs(dx) * 0.7 && dy > 0) {
+        // Vertical dismiss gesture
+        setDragOffset({ x: 0, y: dy });
+      } else {
+        // Horizontal swipe
+        setDragOffset({ x: dx, y: 0 });
+      }
+    }
+  }, [selectedIndex, isDragging, canPan, canSwipe, handlePinch, applyPan]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (selectedIndex === null) return;
+
+    const { pointerId } = e;
+    gestureState.current.pointers.delete(pointerId);
+
+    if (gestureState.current.pointers.size === 0) {
+      setIsDragging(false);
+
+      const { x: dx, y: dy } = dragOffset;
+      const velocity = velocityRef.current;
+
+      // Reset gesture
+      resetGestureState();
+
+      // Check for dismiss
+      if (Math.abs(dy) > DISMISS_THRESHOLD && Math.abs(dy) > Math.abs(dx) && canSwipe) {
+        closeFullscreen();
+        return;
+      }
+
+      // Check for horizontal swipe navigation
+      if (Math.abs(dx) > SWIPE_THRESHOLD && canSwipe) {
+        if (dx < -SWIPE_THRESHOLD && selectedIndex < PHOTOS.length - 1) {
+          navigateBy(1);
+        } else if (dx > SWIPE_THRESHOLD && selectedIndex > 0) {
+          navigateBy(-1);
+        } else {
+          // Spring back
+          setDragOffset({ x: 0, y: 0 });
+        }
+        return;
+      }
+
+      // Spring back if no action
+      setDragOffset({ x: 0, y: 0 });
+    }
+  }, [selectedIndex, dragOffset, canSwipe, closeFullscreen, navigateBy]);
+
+  // Double tap to zoom
+  const handleDoubleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (selectedIndex === null) return;
+
+    e.stopPropagation();
+
+    if (scale > 1.1) {
+      // Reset zoom
+      setScale(1);
+      setOffsetX(0);
+      setOffsetY(0);
+      setIsZoomed(false);
+    } else {
+      // Zoom in to double tap point
+      const rect = viewerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const tapX = 'clientX' in e ? (e as React.MouseEvent).clientX : (e as React.TouchEvent).touches[0].clientX;
+        const tapY = 'clientY' in e ? (e as React.MouseEvent).clientY : (e as React.TouchEvent).touches[0].clientY;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const newScale = DOUBLE_TAP_ZOOM;
+        const offsetToCenterX = (tapX - rect.left - centerX) * (newScale - 1) / newScale;
+        const offsetToCenterY = (tapY - rect.top - centerY) * (newScale - 1) / newScale;
+
+        setScale(newScale);
+        setOffsetX(-offsetToCenterX);
+        setOffsetY(-offsetToCenterY);
+        setIsZoomed(true);
+      }
+    }
+  }, [scale, selectedIndex]);
+
+  // Open photo with shared element transition
+  const openPhoto = useCallback((index: number, event: React.MouseEvent) => {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+
+    setSelectedIndex(index);
+    setTransitionRect(rect);
+    setIsTransitioning(true);
+    setDragOffset({ x: 0, y: 0 });
+    setScale(1);
+    setOffsetX(0);
+    setOffsetY(0);
+    setIsZoomed(false);
+
+    // End transition after animation
+    if (transitionTimeout.current) window.clearTimeout(transitionTimeout.current);
+    transitionTimeout.current = window.setTimeout(() => {
+      setIsTransitioning(false);
+      setTransitionRect(null);
+    }, 420);
+  }, []);
+
+  // Keyboard navigation
   useEffect(() => {
-    if (selected === null || !stripRef.current) return;
-    const activeThumb = stripRef.current.querySelector(`[data-photo-index="${selected}"]`) as HTMLElement | null;
-    activeThumb?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, [selected]);
+    if (selectedIndex === null) return;
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeFullscreen();
+      } else if (event.key === 'ArrowRight') {
+        navigateBy(1);
+      } else if (event.key === 'ArrowLeft') {
+        navigateBy(-1);
+      } else if (event.key.toLowerCase() === 'r' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setScale(1);
+        setOffsetX(0);
+        setOffsetY(0);
+        setIsZoomed(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndex, closeFullscreen, navigateBy]);
+
+  // Auto-center thumbnail strip
+  useEffect(() => {
+    if (selectedIndex === null || !stripRef.current) return;
+
+    const activeThumb = stripRef.current.querySelector(
+      `[data-photo-index="${selectedIndex}"]`
+    ) as HTMLElement | null;
+
+    if (activeThumb) {
+      activeThumb.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+    }
+  }, [selectedIndex]);
+
+  // Preload adjacent images
+  useEffect(() => {
+    if (selectedIndex === null) return;
+
+    const preloadImages = [previousPhoto, nextPhoto].filter(Boolean) as Photo[];
+
+    preloadImages.forEach((photo) => {
+      const img = new Image();
+      img.src = photo.url;
+    });
+  }, [selectedIndex, previousPhoto, nextPhoto]);
+
+  // Cleanup
   useEffect(() => {
     return () => {
-      if (transitionTimer.current) window.clearTimeout(transitionTimer.current);
-      if (closeTimer.current) window.clearTimeout(closeTimer.current);
+      if (transitionTimeout.current) window.clearTimeout(transitionTimeout.current);
+      if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
     };
   }, []);
 
-  const dragScale = Math.max(0.9, 1 - Math.max(drag.y, 0) / 900);
+  // Calculate drag scale for dismiss
+  const dragScale = useMemo(() => {
+    if (dragOffset.y <= 0) return 1;
+    return Math.max(0.82, 1 - Math.max(dragOffset.y, 0) / 1400);
+  }, [dragOffset.y]);
+
+  // Calculate dismiss opacity
+  const dismissOpacity = useMemo(() => {
+    if (dragOffset.y <= 0) return 1;
+    return Math.max(0.2, 1 - Math.max(dragOffset.y, 0) / 600);
+  }, [dragOffset.y]);
+
+  // Shared element transition styles
+  const getTransitionStyle = () => {
+    if (!transitionRect) return {};
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Calculate target size maintaining aspect ratio
+    const targetAspect = currentPhoto?.aspectRatio || 1;
+    let targetWidth = viewportWidth;
+    let targetHeight = viewportWidth / targetAspect;
+
+    if (targetHeight > viewportHeight) {
+      targetHeight = viewportHeight;
+      targetWidth = targetHeight * targetAspect;
+    }
+
+    const targetLeft = (viewportWidth - targetWidth) / 2;
+    const targetTop = (viewportHeight - targetHeight) / 2;
+
+    return {
+      position: 'fixed' as const,
+      left: transitionRect.left,
+      top: transitionRect.top,
+      width: transitionRect.width,
+      height: transitionRect.height,
+      zIndex: 9999,
+    };
+  };
+
+  const current = currentPhoto;
+  const isOpen = selectedIndex !== null;
 
   return (
-    <div className="vf-gallery-page">
-      <header className="vf-gallery-header">
-        <h1>Gallery</h1>
-      </header>
-
-      <div className="vf-gallery-grid" aria-label="Photo gallery">
-        {PHOTOS.map((photo, index) => (
-          <button key={photo.id} className="vf-gallery-cell" onClick={() => setSelected(index)} aria-label={`Open photo ${index + 1}`}>
-            <img src={photo.url} alt={photo.alt} loading="lazy" />
-          </button>
-        ))}
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
+      {/* Gallery Header */}
+      <div className="max-w-[1400px] mx-auto px-6 pt-8 pb-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold tracking-[-1.5px]">Gallery</h1>
+            <p className="text-white/50 text-sm mt-1">Premium moments • {PHOTOS.length} photos</p>
+          </div>
+          <div className="text-xs text-white/40 font-mono tracking-[2px]">X • PHOTOS</div>
+        </div>
       </div>
 
-      {selected !== null && current && (
-        <div
-          className={`vf-fullscreen ${isDismissing ? "vf-fullscreen-dismissing" : ""}`}
-          onTouchStart={(event) => {
-            const touch = event.touches[0];
-            beginDrag(touch.clientX, touch.clientY);
-          }}
-          onTouchMove={(event) => {
-            const touch = event.touches[0];
-            updateDrag(touch.clientX, touch.clientY);
-          }}
-          onTouchEnd={(event) => {
-            const touch = event.changedTouches[0];
-            finishDrag(touch.clientX, touch.clientY);
-          }}
-          onMouseDown={(event) => beginDrag(event.clientX, event.clientY)}
-          onMouseMove={(event) => updateDrag(event.clientX, event.clientY)}
-          onMouseUp={(event) => finishDrag(event.clientX, event.clientY)}
-          onMouseLeave={(event) => {
-            if (mouseActive.current) finishDrag(event.clientX, event.clientY);
-          }}
+      {/* Responsive Masonry Grid */}
+      <div className="max-w-[1400px] mx-auto px-4 pb-24">
+        <div 
+          className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3"
+          aria-label="Photo gallery"
         >
-          <button
-            className="vf-fullscreen-back"
-            onMouseDown={(event) => event.stopPropagation()}
-            onTouchStart={(event) => event.stopPropagation()}
-            onClick={(event) => {
-              event.stopPropagation();
-              closeFullscreen();
-            }}
-            aria-label="Back to gallery"
-          >
-            <ChevronLeft size={20} color="white" strokeWidth={2} />
-          </button>
-
-          <div className="vf-fullscreen-counter">
-            {selected + 1} of {PHOTOS.length}
-          </div>
-
-          <div className="vf-photo-stage" aria-live="polite">
-            {outgoing && (
-              <img
-                key={`out-${outgoing.index}`}
-                src={PHOTOS[outgoing.index].url}
-                alt=""
-                className={`vf-fullscreen-photo vf-photo-out-${outgoing.direction === 1 ? "next" : "previous"}`}
-                draggable={false}
-                loading="eager"
-              />
-            )}
-            <img
-              key={current.id}
-              src={current.url}
-              alt={current.alt}
-              className={`vf-fullscreen-photo ${incomingDirection === 1 ? "vf-photo-in-next" : incomingDirection === -1 ? "vf-photo-in-previous" : ""} ${isDismissing ? "vf-photo-dismiss" : ""}`}
-              draggable={false}
-              loading="eager"
-              style={{
-                transform: outgoing || incomingDirection || isDismissing ? undefined : `translate3d(${drag.x}px, ${drag.y}px, 0) scale(${dragScale})`,
-                transition: isDragging ? "none" : "transform 220ms cubic-bezier(0.4,0,0.2,1)",
-              }}
-            />
-            {previous && <img src={previous.url} alt="" className="vf-preload-photo" loading="eager" />}
-            {next && <img src={next.url} alt="" className="vf-preload-photo" loading="eager" />}
-          </div>
-
-          <div className="vf-fullscreen-dots" onMouseDown={(event) => event.stopPropagation()} onTouchStart={(event) => event.stopPropagation()}>
-            {PHOTOS.map((photo, index) => (
-              <button
-                key={photo.id}
-                className={`vf-dot ${index === selected ? "vf-dot-active" : ""}`}
-                onClick={() => navigateTo(index)}
-                aria-label={`Go to photo ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          <div ref={stripRef} className="vf-thumbnail-strip" onMouseDown={(event) => event.stopPropagation()} onTouchStart={(event) => event.stopPropagation()}>
-            {PHOTOS.map((photo, index) => (
-              <button
-                key={photo.id}
-                data-photo-index={index}
-                className={`vf-thumbnail ${index === selected ? "vf-thumbnail-active" : ""}`}
-                onClick={() => navigateTo(index)}
-                aria-label={`Open thumbnail ${index + 1}`}
-              >
-                <img src={photo.url} alt="" loading={Math.abs(index - selected) <= 1 ? "eager" : "lazy"} />
-              </button>
-            ))}
-          </div>
+          {PHOTOS.map((photo, index) => (
+            <motion.button
+              key={photo.id}
+              onClick={(e) => openPhoto(index, e)}
+              className="group relative w-full overflow-hidden rounded-2xl bg-zinc-950 shadow-xl shadow-black/60 block break-inside-avoid cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.985 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              aria-label={`Open ${photo.alt}`}
+            >
+              <div className="relative">
+                <img
+                  src={photo.url}
+                  alt={photo.alt}
+                  loading="lazy"
+                  className="w-full h-auto object-cover transition-all duration-500 group-hover:scale-[1.08]"
+                  style={{ aspectRatio: photo.aspectRatio }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/60 opacity-60 group-hover:opacity-40 transition-opacity" />
+              </div>
+            </motion.button>
+          ))}
         </div>
-      )}
+      </div>
 
+      {/* Fullscreen Viewer */}
+      <AnimatePresence>
+        {isOpen && current && (
+          <div
+            className="fixed inset-0 z-[9000] bg-black flex flex-col"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            style={{ touchAction: 'none' }}
+          >
+            {/* Shared Element Transition Layer */}
+            <AnimatePresence>
+              {isTransitioning && transitionRect && (
+                <motion.div
+                  className="fixed z-[9999] overflow-hidden rounded-3xl shadow-2xl"
+                  style={getTransitionStyle()}
+                  initial={{
+                    left: transitionRect.left,
+                    top: transitionRect.top,
+                    width: transitionRect.width,
+                    height: transitionRect.height,
+                    borderRadius: 16,
+                  }}
+                  animate={{
+                    left: (window.innerWidth - Math.min(window.innerWidth * 0.92, 1200)) / 2,
+                    top: 40,
+                    width: Math.min(window.innerWidth * 0.92, 1200),
+                    height: window.innerHeight - 160,
+                    borderRadius: 0,
+                  }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 280,
+                    damping: 32,
+                    mass: 1.1,
+                  }}
+                >
+                  <img
+                    src={current.url}
+                    alt={current.alt}
+                    className="w-full h-full object-contain"
+                    draggable={false}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Main Viewer Content */}
+            {!isTransitioning && (
+              <>
+                {/* Glassmorphism Back Button */}
+                <button
+                  onClick={closeFullscreen}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="fixed top-6 left-6 z-[9999] flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 text-white hover:bg-white/15 active:bg-white/20 transition-all duration-200 shadow-xl"
+                  aria-label="Close gallery"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+
+                {/* Image Counter */}
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-1.5 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/15 text-sm font-medium tracking-widest text-white/90">
+                  {selectedIndex! + 1} <span className="text-white/40">/ {PHOTOS.length}</span>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={closeFullscreen}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="fixed top-6 right-6 z-[9999] flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 text-white hover:bg-white/15 active:bg-white/20 transition-all duration-200 shadow-xl"
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+
+                {/* Photo Stage with Physics */}
+                <div
+                  ref={viewerRef}
+                  className="flex-1 relative flex items-center justify-center overflow-hidden"
+                  style={{
+                    paddingTop: '72px',
+                    paddingBottom: '92px',
+                  }}
+                >
+                  <motion.div
+                    ref={imageRef as any}
+                    className="relative flex items-center justify-center"
+                    style={{
+                      transform: `translate3d(${dragOffset.x + offsetX}px, ${dragOffset.y + offsetY}px, 0) scale(${dragScale * scale})`,
+                      transition: isDragging ? 'none' : 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
+                      borderRadius: isDismissing || dragOffset.y > 30 ? '28px' : '0px',
+                      willChange: 'transform',
+                    }}
+                    onDoubleClick={handleDoubleTap}
+                    onTouchStart={(e) => {
+                      if (e.touches.length === 1) {
+                        handlePointerDown(e as any);
+                      }
+                    }}
+                    drag={canSwipe || canPan ? "x" : false}
+                    dragConstraints={{ left: -400, right: 400 }}
+                    dragElastic={0.12}
+                    onDragEnd={(_, info) => {
+                      const velocity = info.velocity.x;
+                      if (Math.abs(velocity) > 600 && canSwipe) {
+                        if (velocity < 0 && selectedIndex! < PHOTOS.length - 1) {
+                          navigateBy(1);
+                        } else if (velocity > 0 && selectedIndex! > 0) {
+                          navigateBy(-1);
+                        }
+                      }
+                      setDragOffset({ x: 0, y: 0 });
+                    }}
+                  >
+                    <img
+                      ref={imageRef}
+                      src={current.url}
+                      alt={current.alt}
+                      className="max-h-[calc(100vh-180px)] max-w-[min(100vw,1200px)] object-contain select-none pointer-events-none"
+                      draggable={false}
+                      style={{
+                        boxShadow: dragOffset.y > 20 
+                          ? '0 40px 120px -20px rgb(0 0 0 / 0.6)' 
+                          : 'none',
+                        transition: isDragging ? 'none' : 'box-shadow 0.2s ease',
+                      }}
+                    />
+                  </motion.div>
+
+                  {/* Preload adjacent photos */}
+                  {previousPhoto && (
+                    <img
+                      src={previousPhoto.url}
+                      alt=""
+                      className="absolute opacity-0 pointer-events-none"
+                      style={{ width: '1px', height: '1px' }}
+                    />
+                  )}
+                  {nextPhoto && (
+                    <img
+                      src={nextPhoto.url}
+                      alt=""
+                      className="absolute opacity-0 pointer-events-none"
+                      style={{ width: '1px', height: '1px' }}
+                    />
+                  )}
+                </div>
+
+                {/* Floating Controls - Glassmorphism Zoom Controls */}
+                <div className="fixed bottom-[92px] right-6 z-[9999] flex flex-col gap-2">
+                  <button
+                    onClick={() => {
+                      const newScale = Math.min(MAX_ZOOM, scale * 1.6);
+                      setScale(newScale);
+                      setIsZoomed(newScale > 1.05);
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 hover:bg-white/15 active:bg-white/25 transition-all shadow-xl"
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn size={18} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newScale = Math.max(1, scale / 1.6);
+                      setScale(newScale);
+                      if (newScale <= 1.05) {
+                        setOffsetX(0);
+                        setOffsetY(0);
+                        setIsZoomed(false);
+                      }
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 hover:bg-white/15 active:bg-white/25 transition-all shadow-xl"
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut size={18} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setScale(1);
+                      setOffsetX(0);
+                      setOffsetY(0);
+                      setIsZoomed(false);
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 hover:bg-white/15 active:bg-white/25 transition-all shadow-xl"
+                    aria-label="Reset zoom"
+                  >
+                    <RotateCcw size={18} />
+                  </button>
+                </div>
+
+                {/* Thumbnail Strip */}
+                <div
+                  ref={stripRef}
+                  className="fixed bottom-0 left-0 right-0 z-[9998] h-[78px] bg-gradient-to-t from-black via-black/95 to-transparent border-t border-white/10 flex items-center gap-2.5 overflow-x-auto px-4 pb-3 scrollbar-hide"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  {PHOTOS.map((photo, index) => (
+                    <button
+                      key={photo.id}
+                      data-photo-index={index}
+                      onClick={() => navigateTo(index)}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={`flex-shrink-0 relative w-[62px] h-[52px] overflow-hidden rounded-xl border-2 transition-all duration-200 ${
+                        index === selectedIndex 
+                          ? 'border-white scale-[1.04] shadow-lg' 
+                          : 'border-white/20 hover:border-white/50'
+                      }`}
+                      aria-label={`Go to photo ${index + 1}`}
+                    >
+                      <img
+                        src={photo.url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading={Math.abs(index - (selectedIndex || 0)) <= 2 ? 'eager' : 'lazy'}
+                      />
+                      {index === selectedIndex && (
+                        <div className="absolute inset-0 bg-white/10" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Background Fade Overlay for Dismiss */}
+                <div 
+                  className="fixed inset-0 bg-black pointer-events-none z-[8999]"
+                  style={{ 
+                    opacity: isDismissing || dragOffset.y > 0 ? dismissOpacity * 0.95 : 1 
+                  }} 
+                />
+              </>
+            )}
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Accessibility & Performance Styles */}
       <style>{`
-        .vf-gallery-page {
-          max-width: 1320px;
-          margin: 0 auto;
-          padding: 16px 12px 88px;
+        .scrollbar-hide {
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
 
-        .vf-gallery-header {
-          padding: 4px 4px 16px;
-        }
-
-        .vf-gallery-header h1 {
-          margin: 0;
-          color: rgba(255,255,255,0.94);
-          font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-          font-size: 22px;
-          font-weight: 700;
-          letter-spacing: 0;
-        }
-
-        .vf-gallery-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 3px;
-        }
-
-        @media (min-width: 900px) {
-          .vf-gallery-grid {
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+        @media (prefers-reduced-motion: reduce) {
+          .fixed, motion\\* {
+            transition: none !important;
+            animation: none !important;
           }
         }
 
         .vf-gallery-cell {
-          position: relative;
-          display: block;
-          width: 100%;
-          aspect-ratio: 1 / 1;
-          overflow: hidden;
-          border: 0;
-          border-radius: 4px;
-          padding: 0;
-          background: #111;
-          cursor: pointer;
           contain: layout style paint;
-        }
-
-        .vf-gallery-cell img {
-          display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .vf-fullscreen {
-          position: fixed;
-          inset: 0;
-          z-index: 9000;
-          overflow: hidden;
-          background: #000000;
-          opacity: 0;
-          animation: vfOverlayIn 250ms cubic-bezier(0.4,0,0.2,1) forwards;
-          touch-action: none;
-          user-select: none;
-          cursor: grab;
-        }
-
-        .vf-fullscreen:active {
-          cursor: grabbing;
-        }
-
-        .vf-fullscreen-dismissing {
-          animation: vfOverlayOut 180ms cubic-bezier(0.4,0,0.2,1) forwards;
-        }
-
-        .vf-fullscreen-back {
-          position: fixed;
-          top: 20px;
-          left: 20px;
-          z-index: 9999;
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          border: 1px solid rgba(255,255,255,0.15);
-          background: rgba(0,0,0,0.5);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          padding: 0;
-        }
-
-        .vf-fullscreen-counter {
-          position: fixed;
-          top: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 9999;
-          font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-          font-size: 13px;
-          font-weight: 500;
-          color: rgba(255,255,255,0.8);
-          line-height: 44px;
-          pointer-events: none;
-        }
-
-        .vf-photo-stage {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-        }
-
-        .vf-fullscreen-photo {
-          position: absolute;
-          inset: 0;
-          display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          will-change: transform, opacity;
-          -webkit-user-drag: none;
-          user-select: none;
-        }
-
-        .vf-preload-photo {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          opacity: 0;
-          pointer-events: none;
-          transform: translate3d(-9999px, -9999px, 0);
-        }
-
-        .vf-photo-in-next {
-          animation: vfSlideInNext 280ms cubic-bezier(0.4,0,0.2,1) both;
-        }
-
-        .vf-photo-in-previous {
-          animation: vfSlideInPrevious 280ms cubic-bezier(0.4,0,0.2,1) both;
-        }
-
-        .vf-photo-out-next {
-          animation: vfSlideOutNext 280ms cubic-bezier(0.4,0,0.2,1) both;
-          z-index: 2;
-        }
-
-        .vf-photo-out-previous {
-          animation: vfSlideOutPrevious 280ms cubic-bezier(0.4,0,0.2,1) both;
-          z-index: 2;
-        }
-
-        .vf-photo-dismiss {
-          animation: vfPhotoDismiss 180ms cubic-bezier(0.4,0,0.2,1) forwards;
-        }
-
-        .vf-fullscreen-dots {
-          position: fixed;
-          left: 50%;
-          bottom: 86px;
-          transform: translateX(-50%);
-          z-index: 9998;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 8px 10px;
-        }
-
-        .vf-dot {
-          width: 5px;
-          height: 5px;
-          border: 0;
-          border-radius: 999px;
-          padding: 0;
-          background: rgba(255,255,255,0.3);
-          cursor: pointer;
-          transition: width 180ms cubic-bezier(0.4,0,0.2,1), height 180ms cubic-bezier(0.4,0,0.2,1), background 180ms cubic-bezier(0.4,0,0.2,1);
-        }
-
-        .vf-dot-active {
-          width: 8px;
-          height: 8px;
-          background: #ffffff;
-        }
-
-        .vf-thumbnail-strip {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 9998;
-          height: 70px;
-          box-sizing: border-box;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          overflow-x: auto;
-          padding: 7px 12px calc(7px + env(safe-area-inset-bottom));
-          background: linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0));
-          scrollbar-width: none;
-        }
-
-        .vf-thumbnail-strip::-webkit-scrollbar {
-          display: none;
-        }
-
-        .vf-thumbnail {
-          flex: 0 0 auto;
-          width: 60px;
-          height: 56px;
-          overflow: hidden;
-          border: 0;
-          border-radius: 6px;
-          padding: 0;
-          background: rgba(255,255,255,0.08);
-          cursor: pointer;
-        }
-
-        .vf-thumbnail-active {
-          border: 2px solid #ffffff;
-        }
-
-        .vf-thumbnail img {
-          display: block;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        @keyframes vfOverlayIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes vfOverlayOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
-        }
-
-        @keyframes vfSlideInNext {
-          from { transform: translate3d(100%, 0, 0); opacity: 0; }
-          to { transform: translate3d(0, 0, 0); opacity: 1; }
-        }
-
-        @keyframes vfSlideOutNext {
-          from { transform: translate3d(0, 0, 0); opacity: 1; }
-          to { transform: translate3d(-100%, 0, 0); opacity: 0; }
-        }
-
-        @keyframes vfSlideInPrevious {
-          from { transform: translate3d(-100%, 0, 0); opacity: 0; }
-          to { transform: translate3d(0, 0, 0); opacity: 1; }
-        }
-
-        @keyframes vfSlideOutPrevious {
-          from { transform: translate3d(0, 0, 0); opacity: 1; }
-          to { transform: translate3d(100%, 0, 0); opacity: 0; }
-        }
-
-        @keyframes vfPhotoDismiss {
-          from { transform: translate3d(0, 28px, 0) scale(0.97); opacity: 1; }
-          to { transform: translate3d(0, 70px, 0) scale(0.86); opacity: 0; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .vf-fullscreen,
-          .vf-fullscreen-dismissing,
-          .vf-photo-in-next,
-          .vf-photo-in-previous,
-          .vf-photo-out-next,
-          .vf-photo-out-previous,
-          .vf-photo-dismiss {
-            animation-duration: 1ms !important;
-          }
         }
       `}</style>
     </div>
