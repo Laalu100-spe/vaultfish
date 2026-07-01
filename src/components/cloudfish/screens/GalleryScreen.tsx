@@ -105,11 +105,11 @@ export function GalleryScreen() {
       closeFullscreen();
       return;
     }
-    if (deltaX > SWIPE_THRESHOLD) {
+    if (deltaX > SWIPE_THRESHOLD && selected < PHOTOS.length - 1) {
       navigateBy(1);
       return;
     }
-    if (deltaX < -SWIPE_THRESHOLD) {
+    if (deltaX < -SWIPE_THRESHOLD && selected > 0) {
       navigateBy(-1);
       return;
     }
