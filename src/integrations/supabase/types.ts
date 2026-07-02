@@ -55,12 +55,14 @@ export type Database = {
           account_id: string | null
           cloud_path: string | null
           created_at: string
+          deleted_at: string | null
           file_name: string
           file_size: number
           file_type: string | null
           id: string
           is_duplicate: boolean
           last_modified: string
+          storage_path: string | null
           thumbnail_url: string | null
           user_id: string
         }
@@ -68,12 +70,14 @@ export type Database = {
           account_id?: string | null
           cloud_path?: string | null
           created_at?: string
+          deleted_at?: string | null
           file_name: string
           file_size?: number
           file_type?: string | null
           id?: string
           is_duplicate?: boolean
           last_modified?: string
+          storage_path?: string | null
           thumbnail_url?: string | null
           user_id: string
         }
@@ -81,12 +85,14 @@ export type Database = {
           account_id?: string | null
           cloud_path?: string | null
           created_at?: string
+          deleted_at?: string | null
           file_name?: string
           file_size?: number
           file_type?: string | null
           id?: string
           is_duplicate?: boolean
           last_modified?: string
+          storage_path?: string | null
           thumbnail_url?: string | null
           user_id?: string
         }

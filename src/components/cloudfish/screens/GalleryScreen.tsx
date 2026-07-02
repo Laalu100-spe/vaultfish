@@ -1,635 +1,330 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import { ChevronLeft, UploadCloud, ImageIcon, Play, X, Share2, Trash2, Download } from "lucide-react";
+import { useFiles, categorizeFile, createSignedUrl, softDeleteFile, type FileRow } from "@/hooks/useFiles";
+import { toast } from "sonner";
 
-// Types
-type Photo = {
-  id: string;
-  url: string;
-  alt: string;
-  aspectRatio: number;
-};
+type Media = { id: string; row: FileRow; url: string; kind: "image" | "video" };
 
-const PHOTOS: Photo[] = [
-  { id: 'photo-1', url: 'https://picsum.photos/id/1015/800/1200', alt: 'Mountain landscape at dusk', aspectRatio: 800 / 1200 },
-  { id: 'photo-2', url: 'https://picsum.photos/id/1005/1200/800', alt: 'Ocean sunset', aspectRatio: 1200 / 800 },
-  { id: 'photo-3', url: 'https://picsum.photos/id/1016/800/1000', alt: 'Forest path', aspectRatio: 800 / 1000 },
-  { id: 'photo-4', url: 'https://picsum.photos/id/1033/1000/800', alt: 'City skyline', aspectRatio: 1000 / 800 },
-  { id: 'photo-5', url: 'https://picsum.photos/id/1040/800/1100', alt: 'Desert dunes', aspectRatio: 800 / 1100 },
-  { id: 'photo-6', url: 'https://picsum.photos/id/106/1200/900', alt: 'Lake reflection', aspectRatio: 1200 / 900 },
-  { id: 'photo-7', url: 'https://picsum.photos/id/1074/900/1200', alt: 'Snowy mountains', aspectRatio: 900 / 1200 },
-  { id: 'photo-8', url: 'https://picsum.photos/id/1080/1100/800', alt: 'Waterfall', aspectRatio: 1100 / 800 },
-  { id: 'photo-9', url: 'https://picsum.photos/id/1009/800/1000', alt: 'Coastal cliffs', aspectRatio: 800 / 1000 },
-  { id: 'photo-10', url: 'https://picsum.photos/id/1018/1200/850', alt: 'Autumn forest', aspectRatio: 1200 / 850 },
-  { id: 'photo-11', url: 'https://picsum.photos/id/1036/900/1100', alt: 'Starry night', aspectRatio: 900 / 1100 },
-  { id: 'photo-12', url: 'https://picsum.photos/id/1043/1000/900', alt: 'Urban street', aspectRatio: 1000 / 900 },
-];
-
-const SWIPE_THRESHOLD = 80;
-const DISMISS_THRESHOLD = 120;
-const MAX_ZOOM = 8;
-const MIN_ZOOM = 0.5;
-const DOUBLE_TAP_ZOOM = 3;
-
-interface GestureState {
-  pointers: Map<number, { x: number; y: number }>;
-  initialDistance: number | null;
-  initialScale: number;
-  initialOffset: { x: number; y: number };
+function useSignedMedia(files: FileRow[]) {
+  const [media, setMedia] = useState<Media[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const media$ = files.filter((f) => {
+      const c = categorizeFile(f);
+      return (c === "photos" || c === "videos") && !!f.storage_path;
+    });
+    (async () => {
+      const items = await Promise.all(
+        media$.map(async (f) => {
+          const url = await createSignedUrl(f.storage_path!, 3600);
+          return url ? { id: f.id, row: f, url, kind: categorizeFile(f) === "videos" ? "video" : "image" as const } : null;
+        }),
+      );
+      if (!cancelled) setMedia(items.filter(Boolean) as Media[]);
+    })();
+    return () => { cancelled = true; };
+  }, [files]);
+  return media;
 }
 
-// Inline SVG Icons (replaces lucide-react)
-const IconChevronLeft = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m15 18-6-6 6-6" />
-  </svg>
-);
-
-const IconX = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 6 6 18" /><path d="m6 6 12 12" />
-  </svg>
-);
-
-const IconZoomIn = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6" /><path d="M8 11h6" />
-  </svg>
-);
-
-const IconZoomOut = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M8 11h6" />
-  </svg>
-);
-
-const IconReset = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
-  </svg>
-);
+const SWIPE_DISMISS = 140;
+const SWIPE_NAV = 90;
+const MAX_ZOOM = 8;
 
 export function GalleryScreen() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [transitionRect, setTransitionRect] = useState<DOMRect | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isDismissing, setIsDismissing] = useState(false);
+  const { files, loading } = useFiles();
+  const media = useSignedMedia(files);
+  const [index, setIndex] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
-
-  const dragStart = useRef({ x: 0, y: 0 });
-  const velocityRef = useRef({ x: 0, y: 0 });
-  const lastMoveTime = useRef(0);
-  const lastPosition = useRef({ x: 0, y: 0 });
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const gestureState = useRef<GestureState>({
-    pointers: new Map(),
-    initialDistance: null,
-    initialScale: 1,
-    initialOffset: { x: 0, y: 0 },
-  });
-  const transitionTimeout = useRef<number | null>(null);
 
-  const currentPhoto = selectedIndex !== null ? PHOTOS[selectedIndex] : null;
-  const previousPhoto = selectedIndex !== null && selectedIndex > 0 ? PHOTOS[selectedIndex - 1] : null;
-  const nextPhoto = selectedIndex !== null && selectedIndex < PHOTOS.length - 1 ? PHOTOS[selectedIndex + 1] : null;
+  const dragX = useMotionValue(0);
+  const dragY = useMotionValue(0);
+  const dismissScale = useTransform(dragY, [0, 300], [1, 0.82]);
+  const bgOpacity = useTransform(dragY, [0, 260], [1, 0.35]);
 
-  const canSwipe = scale === 1 && !isZoomed;
-  const canPan = scale > 1;
+  const current = index !== null ? media[index] : null;
+  const canNav = scale <= 1.02;
 
-  // Close fullscreen
-  const closeFullscreen = useCallback(() => {
-    if (selectedIndex === null) return;
-
-    setIsDismissing(true);
-    setDragOffset({ x: 0, y: 40 });
+  const close = useCallback(() => {
+    setIndex(null);
     setScale(1);
-    setOffsetX(0);
-    setOffsetY(0);
-    setIsZoomed(false);
+    setPan({ x: 0, y: 0 });
+    dragX.set(0); dragY.set(0);
+  }, [dragX, dragY]);
 
-    if (transitionTimeout.current) window.clearTimeout(transitionTimeout.current);
-
-    transitionTimeout.current = window.setTimeout(() => {
-      setSelectedIndex(null);
-      setIsTransitioning(false);
-      setTransitionRect(null);
-      setDragOffset({ x: 0, y: 0 });
-      setIsDragging(false);
-      setIsDismissing(false);
-      resetGestureState();
-    }, 220);
-  }, [selectedIndex]);
-
-  // Navigate to photo
-  const navigateTo = useCallback((targetIndex: number) => {
-    if (selectedIndex === null || targetIndex === selectedIndex || targetIndex < 0 || targetIndex >= PHOTOS.length) return;
-
-    setScale(1);
-    setOffsetX(0);
-    setOffsetY(0);
-    setIsZoomed(false);
-    setDragOffset({ x: 0, y: 0 });
-    setSelectedIndex(targetIndex);
-
-    requestAnimationFrame(() => {
-      if (stripRef.current) {
-        const activeThumb = stripRef.current.querySelector(`[data-photo-index="${targetIndex}"]`) as HTMLElement | null;
-        activeThumb?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
-    });
-  }, [selectedIndex]);
-
-  const navigateBy = useCallback((direction: 1 | -1) => {
-    if (selectedIndex === null) return;
-    navigateTo(selectedIndex + direction);
-  }, [selectedIndex, navigateTo]);
-
-  const resetGestureState = () => {
-    gestureState.current = {
-      pointers: new Map(),
-      initialDistance: null,
-      initialScale: 1,
-      initialOffset: { x: 0, y: 0 },
-    };
-  };
-
-  // Pan bounds
-  const getPanBounds = useCallback(() => {
-    if (!viewerRef.current || !imageRef.current) {
-      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    }
-    const container = viewerRef.current.getBoundingClientRect();
-    const img = imageRef.current;
-    const naturalWidth = img.naturalWidth || 800;
-    const naturalHeight = img.naturalHeight || 600;
-    const containerWidth = container.width;
-    const containerHeight = container.height;
-    const scaledWidth = naturalWidth * scale;
-    const scaledHeight = naturalHeight * scale;
-    const overflowX = Math.max(0, scaledWidth - containerWidth);
-    const overflowY = Math.max(0, scaledHeight - containerHeight);
-
-    return {
-      minX: -overflowX / 2,
-      maxX: overflowX / 2,
-      minY: -overflowY / 2,
-      maxY: overflowY / 2,
-    };
-  }, [scale]);
-
-  const applyPan = useCallback((dx: number, dy: number) => {
-    const bounds = getPanBounds();
-    const newX = Math.max(bounds.minX, Math.min(bounds.maxX, offsetX + dx));
-    const newY = Math.max(bounds.minY, Math.min(bounds.maxY, offsetY + dy));
-    setOffsetX(newX);
-    setOffsetY(newY);
-  }, [offsetX, offsetY, getPanBounds]);
-
-  // Pinch handling
-  const handlePinch = useCallback((pointers: Map<number, { x: number; y: number }>) => {
-    if (pointers.size !== 2) return;
-    const [p1, p2] = Array.from(pointers.values());
-    const currentDistance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-
-    if (!gestureState.current.initialDistance) {
-      gestureState.current.initialDistance = currentDistance;
-      gestureState.current.initialScale = scale;
-      gestureState.current.initialOffset = { x: offsetX, y: offsetY };
-      return;
-    }
-
-    const scaleFactor = currentDistance / gestureState.current.initialDistance;
-    const newScale = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, gestureState.current.initialScale * scaleFactor));
-
-    const midX = (p1.x + p2.x) / 2;
-    const midY = (p1.y + p2.y) / 2;
-    const container = viewerRef.current?.getBoundingClientRect();
-    if (!container) return;
-
-    const centerX = container.width / 2;
-    const centerY = container.height / 2;
-    const scaleDiff = newScale - gestureState.current.initialScale;
-    const panAdjustX = (midX - centerX) * (scaleDiff / gestureState.current.initialScale);
-    const panAdjustY = (midY - centerY) * (scaleDiff / gestureState.current.initialScale);
-
-    setScale(newScale);
-    setOffsetX(gestureState.current.initialOffset.x - panAdjustX);
-    setOffsetY(gestureState.current.initialOffset.y - panAdjustY);
-    setIsZoomed(newScale > 1.05);
-  }, [scale, offsetX, offsetY]);
-
-  // Pointer handlers
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (selectedIndex === null) return;
-
-    const { clientX, clientY, pointerId } = e;
-    gestureState.current.pointers.set(pointerId, { x: clientX, y: clientY });
-
-    if (gestureState.current.pointers.size === 1) {
-      dragStart.current = { x: clientX, y: clientY };
-      lastPosition.current = { x: clientX, y: clientY };
-      lastMoveTime.current = Date.now();
-      setIsDragging(true);
-    } else if (gestureState.current.pointers.size === 2) {
-      gestureState.current.initialDistance = null;
-    }
-
-    if (e.pointerType === 'touch') e.preventDefault();
-  }, [selectedIndex]);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (selectedIndex === null || !isDragging) return;
-
-    const { clientX, clientY, pointerId } = e;
-    const currentPointers = gestureState.current.pointers;
-    if (!currentPointers.has(pointerId)) return;
-
-    currentPointers.set(pointerId, { x: clientX, y: clientY });
-
-    if (currentPointers.size === 2) {
-      handlePinch(currentPointers);
-      return;
-    }
-
-    const dx = clientX - dragStart.current.x;
-    const dy = clientY - dragStart.current.y;
-
-    const now = Date.now();
-    const dt = now - lastMoveTime.current;
-    if (dt > 0) {
-      velocityRef.current = {
-        x: (clientX - lastPosition.current.x) / dt,
-        y: (clientY - lastPosition.current.y) / dt,
-      };
-    }
-    lastPosition.current = { x: clientX, y: clientY };
-    lastMoveTime.current = now;
-
-    if (canPan) {
-      applyPan(dx * 0.8, dy * 0.8);
-    } else if (canSwipe) {
-      if (Math.abs(dy) > Math.abs(dx) * 0.7 && dy > 0) {
-        setDragOffset({ x: 0, y: dy });
-      } else {
-        setDragOffset({ x: dx, y: 0 });
-      }
-    }
-  }, [selectedIndex, isDragging, canPan, canSwipe, handlePinch, applyPan]);
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (selectedIndex === null) return;
-
-    const { pointerId } = e;
-    gestureState.current.pointers.delete(pointerId);
-
-    if (gestureState.current.pointers.size === 0) {
-      setIsDragging(false);
-      const { x: dx, y: dy } = dragOffset;
-
-      resetGestureState();
-
-      if (Math.abs(dy) > DISMISS_THRESHOLD && Math.abs(dy) > Math.abs(dx) && canSwipe) {
-        closeFullscreen();
-        return;
-      }
-
-      if (Math.abs(dx) > SWIPE_THRESHOLD && canSwipe) {
-        if (dx < -SWIPE_THRESHOLD && selectedIndex < PHOTOS.length - 1) navigateBy(1);
-        else if (dx > SWIPE_THRESHOLD && selectedIndex > 0) navigateBy(-1);
-        else setDragOffset({ x: 0, y: 0 });
-        return;
-      }
-
-      setDragOffset({ x: 0, y: 0 });
-    }
-  }, [selectedIndex, dragOffset, canSwipe, closeFullscreen, navigateBy]);
-
-  // Double tap zoom
-  const handleDoubleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if (selectedIndex === null) return;
-    e.stopPropagation();
-
-    if (scale > 1.1) {
+  const go = useCallback(
+    (dir: 1 | -1) => {
+      if (index === null) return;
+      const nxt = index + dir;
+      if (nxt < 0 || nxt >= media.length) return;
+      setIndex(nxt);
       setScale(1);
-      setOffsetX(0);
-      setOffsetY(0);
-      setIsZoomed(false);
-    } else {
-      const rect = viewerRef.current?.getBoundingClientRect();
-      if (rect) {
-        const tapX = 'clientX' in e ? (e as React.MouseEvent).clientX : (e as React.TouchEvent).touches[0].clientX;
-        const tapY = 'clientY' in e ? (e as React.MouseEvent).clientY : (e as React.TouchEvent).touches[0].clientY;
+      setPan({ x: 0, y: 0 });
+      dragX.set(0); dragY.set(0);
+    },
+    [index, media.length, dragX, dragY],
+  );
 
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const newScale = DOUBLE_TAP_ZOOM;
-        const offsetToCenterX = (tapX - rect.left - centerX) * (newScale - 1) / newScale;
-        const offsetToCenterY = (tapY - rect.top - centerY) * (newScale - 1) / newScale;
+  useEffect(() => {
+    if (index === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "0") { setScale(1); setPan({ x: 0, y: 0 }); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [index, close, go]);
 
-        setScale(newScale);
-        setOffsetX(-offsetToCenterX);
-        setOffsetY(-offsetToCenterY);
-        setIsZoomed(true);
-      }
+  // Auto-center active thumbnail
+  useEffect(() => {
+    if (index === null || !stripRef.current) return;
+    const el = stripRef.current.querySelector(`[data-idx="${index}"]`) as HTMLElement | null;
+    el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [index]);
+
+  // Preload neighbours
+  useEffect(() => {
+    if (index === null) return;
+    [index - 1, index + 1].forEach((i) => {
+      const m = media[i]; if (m && m.kind === "image") { const img = new Image(); img.src = m.url; }
+    });
+  }, [index, media]);
+
+  const onWheel = (e: React.WheelEvent) => {
+    if (index === null) return;
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      setScale((s) => Math.max(1, Math.min(MAX_ZOOM, s - e.deltaY * 0.01)));
     }
-  }, [scale, selectedIndex]);
-
-  // Open photo with shared element transition
-  const openPhoto = useCallback((index: number, event: React.MouseEvent) => {
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-
-    setSelectedIndex(index);
-    setTransitionRect(rect);
-    setIsTransitioning(true);
-    setDragOffset({ x: 0, y: 0 });
-    setScale(1);
-    setOffsetX(0);
-    setOffsetY(0);
-    setIsZoomed(false);
-
-    if (transitionTimeout.current) window.clearTimeout(transitionTimeout.current);
-    transitionTimeout.current = window.setTimeout(() => {
-      setIsTransitioning(false);
-      setTransitionRect(null);
-    }, 420);
-  }, []);
-
-  // Keyboard support
-  useEffect(() => {
-    if (selectedIndex === null) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeFullscreen();
-      else if (event.key === 'ArrowRight') navigateBy(1);
-      else if (event.key === 'ArrowLeft') navigateBy(-1);
-      else if ((event.key.toLowerCase() === 'r') && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        setScale(1);
-        setOffsetX(0);
-        setOffsetY(0);
-        setIsZoomed(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, closeFullscreen, navigateBy]);
-
-  // Auto-center thumbnails
-  useEffect(() => {
-    if (selectedIndex === null || !stripRef.current) return;
-
-    const activeThumb = stripRef.current.querySelector(`[data-photo-index="${selectedIndex}"]`) as HTMLElement | null;
-    activeThumb?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [selectedIndex]);
-
-  // Preload adjacent images
-  useEffect(() => {
-    if (selectedIndex === null) return;
-    const preload = [previousPhoto, nextPhoto].filter(Boolean) as Photo[];
-    preload.forEach(p => { const img = new Image(); img.src = p.url; });
-  }, [selectedIndex, previousPhoto, nextPhoto]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (transitionTimeout.current) window.clearTimeout(transitionTimeout.current);
-    };
-  }, []);
-
-  // Drag scale & opacity
-  const dragScale = useMemo(() => (dragOffset.y <= 0 ? 1 : Math.max(0.82, 1 - Math.max(dragOffset.y, 0) / 1400)), [dragOffset.y]);
-  const dismissOpacity = useMemo(() => (dragOffset.y <= 0 ? 1 : Math.max(0.2, 1 - Math.max(dragOffset.y, 0) / 600)), [dragOffset.y]);
-
-  // Shared element transition styles
-  const getTransitionStyle = () => {
-    if (!transitionRect) return {};
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const aspect = currentPhoto?.aspectRatio || 1;
-    let tw = vw, th = vw / aspect;
-    if (th > vh) { th = vh; tw = th * aspect; }
-    return {
-      position: 'fixed' as const,
-      left: transitionRect.left,
-      top: transitionRect.top,
-      width: transitionRect.width,
-      height: transitionRect.height,
-      zIndex: 9999,
-    };
   };
 
-  const current = currentPhoto;
-  const isOpen = selectedIndex !== null;
+  const onDoubleClick = (e: React.MouseEvent) => {
+    if (scale > 1.05) { setScale(1); setPan({ x: 0, y: 0 }); }
+    else setScale(2.5);
+    e.stopPropagation();
+  };
+
+  // Pinch state
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      pinchRef.current = { dist: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), scale };
+    }
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const ns = Math.max(1, Math.min(MAX_ZOOM, pinchRef.current.scale * (d / pinchRef.current.dist)));
+      setScale(ns);
+    }
+  };
+  const onTouchEnd = (e: React.TouchEvent) => { if (e.touches.length < 2) pinchRef.current = null; };
+
+  const share = async (row: FileRow) => {
+    if (!row.storage_path) return;
+    const url = await createSignedUrl(row.storage_path, 60 * 60 * 24 * 7);
+    if (!url) return toast.error("Could not create link");
+    await navigator.clipboard.writeText(url);
+    toast.success("Link copied");
+  };
+
+  const download = async (row: FileRow) => {
+    if (!row.storage_path) return;
+    const url = await createSignedUrl(row.storage_path, 300);
+    if (!url) return;
+    const a = document.createElement("a"); a.href = url; a.download = row.file_name; document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  const del = async (row: FileRow) => {
+    close();
+    await softDeleteFile(row.id, row.storage_path);
+    toast.success("Deleted");
+  };
+
+  if (loading) return <div className="text-muted text-sm">Loading gallery…</div>;
+
+  if (media.length === 0) {
+    return (
+      <div className="flex flex-col items-center text-center py-20">
+        <div style={{ width: 72, height: 72, borderRadius: 999, background: "rgba(77,144,254,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <ImageIcon size={30} color="#4d90fe" strokeWidth={1.5} />
+        </div>
+        <div style={{ marginTop: 16, fontSize: 16, fontWeight: 600, color: "#fff" }}>No photos or videos yet</div>
+        <div style={{ marginTop: 6, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Upload media to see it here</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
-      {/* Header */}
-      <div className="max-w-[1400px] mx-auto px-6 pt-8 pb-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-4xl font-semibold tracking-[-1.5px]">Gallery</h1>
-            <p className="text-white/50 text-sm mt-1">Premium moments • {PHOTOS.length} photos</p>
-          </div>
-          <div className="text-xs text-white/40 font-mono tracking-[2px]">X • PHOTOS</div>
+    <div ref={containerRef}>
+      <div className="mb-5 flex items-end justify-between">
+        <div>
+          <h1 style={{ fontFamily: '"Inter", sans-serif', fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em" }}>Gallery</h1>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{media.length} items</p>
         </div>
       </div>
 
-      {/* Masonry Grid */}
-      <div className="max-w-[1400px] mx-auto px-4 pb-24">
-        <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3" aria-label="Photo gallery">
-          {PHOTOS.map((photo, index) => (
-            <button
-              key={photo.id}
-              onClick={(e) => openPhoto(index, e)}
-              className="group relative w-full overflow-hidden rounded-2xl bg-zinc-950 shadow-xl shadow-black/60 block break-inside-avoid cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:scale-[0.985] transition-transform"
-              aria-label={`Open ${photo.alt}`}
-            >
-              <div className="relative">
-                <img
-                  src={photo.url}
-                  alt={photo.alt}
-                  loading="lazy"
-                  className="w-full h-auto object-cover transition-all duration-500 group-hover:scale-[1.08]"
-                  style={{ aspectRatio: photo.aspectRatio }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/20 to-black/60 opacity-60 group-hover:opacity-40 transition-opacity" />
+      <div
+        role="grid"
+        aria-label="Photo grid"
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 3 }}
+      >
+        {media.map((m, i) => (
+          <motion.button
+            key={m.id}
+            layoutId={`vf-photo-${m.id}`}
+            onClick={() => setIndex(i)}
+            className="relative overflow-hidden bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            style={{ aspectRatio: "1/1", borderRadius: 4, cursor: "zoom-in" }}
+            whileTap={{ scale: 0.97 }}
+            aria-label={`Open ${m.row.file_name}`}
+          >
+            <img src={m.url} alt={m.row.file_name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            {m.kind === "video" && (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.25)" }}>
+                <Play size={22} color="#fff" fill="#fff" />
               </div>
-            </button>
-          ))}
-        </div>
+            )}
+          </motion.button>
+        ))}
       </div>
 
-      {/* Fullscreen Viewer */}
-      {isOpen && current && (
-        <div
-          className="fixed inset-0 z-[9000] bg-black flex flex-col"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          style={{ touchAction: 'none' }}
-        >
-          {/* Shared Element Transition Layer */}
-          {isTransitioning && transitionRect && (
-            <div
-              className="fixed z-[9999] overflow-hidden rounded-3xl shadow-2xl"
-              style={getTransitionStyle()}
-            >
-              <img
-                src={current.url}
-                alt={current.alt}
-                className="w-full h-full object-contain"
-                draggable={false}
-              />
+      <AnimatePresence>
+        {current && (
+          <motion.div
+            key="viewer"
+            className="fixed inset-0 z-[9000] select-none"
+            style={{ background: "#000" }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            onWheel={onWheel}
+          >
+            <motion.div className="absolute inset-0" style={{ opacity: bgOpacity, background: "#000" }} />
+
+            {/* Top bar */}
+            <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between" style={{ padding: "16px 16px", paddingTop: "calc(16px + env(safe-area-inset-top))" }}>
+              <button
+                onClick={close}
+                className="flex items-center justify-center"
+                aria-label="Back to gallery"
+                style={{ width: 44, height: 44, borderRadius: 999, background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}
+              >
+                <ChevronLeft size={22} color="#fff" />
+              </button>
+              <div style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: 500, fontFamily: '"Inter", sans-serif' }}>
+                {(index ?? 0) + 1} / {media.length}
+              </div>
+              <div className="flex gap-2">
+                <IconGlass onClick={() => download(current.row)} label="Download"><Download size={18} color="#fff" /></IconGlass>
+                <IconGlass onClick={() => share(current.row)} label="Share"><Share2 size={18} color="#fff" /></IconGlass>
+                <IconGlass onClick={() => del(current.row)} label="Delete"><Trash2 size={18} color="#f87171" /></IconGlass>
+                <IconGlass onClick={close} label="Close"><X size={18} color="#fff" /></IconGlass>
+              </div>
             </div>
-          )}
 
-          {/* Main Content */}
-          {!isTransitioning && (
-            <>
-              {/* Glass Back Button */}
-              <button
-                onClick={closeFullscreen}
-                onPointerDown={(e) => e.stopPropagation()}
-                className="fixed top-6 left-6 z-[9999] flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 text-white hover:bg-white/15 active:bg-white/20 transition-all duration-200 shadow-xl"
-                aria-label="Close gallery"
+            {/* Photo stage */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ x: dragX, y: dragY, scale: dismissScale }}
+              drag={canNav}
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              dragElastic={0.6}
+              onDragEnd={(_, info) => {
+                const { offset, velocity } = info;
+                if (offset.y > SWIPE_DISMISS || velocity.y > 800) return close();
+                if (offset.x < -SWIPE_NAV || velocity.x < -600) return go(1);
+                if (offset.x > SWIPE_NAV || velocity.x > 600) return go(-1);
+                dragX.set(0); dragY.set(0);
+              }}
+              onDoubleClick={onDoubleClick}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
+              <motion.div
+                layoutId={`vf-photo-${current.id}`}
+                transition={{ type: "spring", stiffness: 300, damping: 32 }}
+                style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}
               >
-                <IconChevronLeft />
-              </button>
-
-              {/* Counter */}
-              <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-1.5 rounded-3xl bg-white/10 backdrop-blur-2xl border border-white/15 text-sm font-medium tracking-widest text-white/90">
-                {selectedIndex! + 1} <span className="text-white/40">/ {PHOTOS.length}</span>
-              </div>
-
-              {/* Close Button */}
-              <button
-                onClick={closeFullscreen}
-                onPointerDown={(e) => e.stopPropagation()}
-                className="fixed top-6 right-6 z-[9999] flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 text-white hover:bg-white/15 active:bg-white/20 transition-all duration-200 shadow-xl"
-                aria-label="Close"
-              >
-                <IconX />
-              </button>
-
-              {/* Photo Stage */}
-              <div
-                ref={viewerRef}
-                className="flex-1 relative flex items-center justify-center overflow-hidden"
-                style={{ paddingTop: '72px', paddingBottom: '92px' }}
-              >
-                <div
-                  ref={imageRef as any}
-                  className="relative flex items-center justify-center"
-                  style={{
-                    transform: `translate3d(${dragOffset.x + offsetX}px, ${dragOffset.y + offsetY}px, 0) scale(${dragScale * scale})`,
-                    transition: isDragging ? 'none' : 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
-                    borderRadius: isDismissing || dragOffset.y > 30 ? '28px' : '0px',
-                    willChange: 'transform',
-                  }}
-                  onDoubleClick={handleDoubleTap}
-                  onTouchStart={(e) => {
-                    if (e.touches.length === 1) handlePointerDown(e as any);
-                  }}
-                >
-                  <img
-                    ref={imageRef}
+                {current.kind === "image" ? (
+                  <motion.img
                     src={current.url}
-                    alt={current.alt}
-                    className="max-h-[calc(100vh-180px)] max-w-[min(100vw,1200px)] object-contain select-none pointer-events-none"
+                    alt={current.row.file_name}
                     draggable={false}
                     style={{
-                      boxShadow: dragOffset.y > 20 ? '0 40px 120px -20px rgb(0 0 0 / 0.6)' : 'none',
-                      transition: isDragging ? 'none' : 'box-shadow 0.2s ease',
+                      maxWidth: "min(100%, 96vw)",
+                      maxHeight: "78vh",
+                      objectFit: "contain",
+                      transform: `scale(${scale}) translate3d(${pan.x}px,${pan.y}px,0)`,
+                      transition: scale === 1 ? "transform 220ms cubic-bezier(0.4,0,0.2,1)" : "none",
+                      borderRadius: 8,
+                      willChange: "transform",
                     }}
                   />
-                </div>
+                ) : (
+                  <video src={current.url} controls autoPlay style={{ maxWidth: "96vw", maxHeight: "78vh", borderRadius: 8 }} />
+                )}
+              </motion.div>
+            </motion.div>
 
-                {/* Preload */}
-                {previousPhoto && <img src={previousPhoto.url} alt="" className="absolute opacity-0 pointer-events-none" style={{ width: '1px', height: '1px' }} />}
-                {nextPhoto && <img src={nextPhoto.url} alt="" className="absolute opacity-0 pointer-events-none" style={{ width: '1px', height: '1px' }} />}
-              </div>
-
-              {/* Zoom Controls */}
-              <div className="fixed bottom-[92px] right-6 z-[9999] flex flex-col gap-2">
-                <button
-                  onClick={() => { const ns = Math.min(MAX_ZOOM, scale * 1.6); setScale(ns); setIsZoomed(ns > 1.05); }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 hover:bg-white/15 active:bg-white/25 transition-all shadow-xl"
-                  aria-label="Zoom in"
-                >
-                  <IconZoomIn />
-                </button>
-                <button
-                  onClick={() => {
-                    const ns = Math.max(1, scale / 1.6);
-                    setScale(ns);
-                    if (ns <= 1.05) { setOffsetX(0); setOffsetY(0); setIsZoomed(false); }
-                  }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 hover:bg-white/15 active:bg-white/25 transition-all shadow-xl"
-                  aria-label="Zoom out"
-                >
-                  <IconZoomOut />
-                </button>
-                <button
-                  onClick={() => { setScale(1); setOffsetX(0); setOffsetY(0); setIsZoomed(false); }}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 hover:bg-white/15 active:bg-white/25 transition-all shadow-xl"
-                  aria-label="Reset zoom"
-                >
-                  <IconReset />
-                </button>
-              </div>
-
-              {/* Thumbnail Strip */}
-              <div
-                ref={stripRef}
-                className="fixed bottom-0 left-0 right-0 z-[9998] h-[78px] bg-gradient-to-t from-black via-black/95 to-transparent border-t border-white/10 flex items-center gap-2.5 overflow-x-auto px-4 pb-3 scrollbar-hide"
-                onPointerDown={(e) => e.stopPropagation()}
-              >
-                {PHOTOS.map((photo, index) => (
+            {/* Thumbnail strip */}
+            <div
+              ref={stripRef}
+              className="absolute left-0 right-0 z-20 flex items-center gap-2 overflow-x-auto"
+              style={{
+                bottom: 0, height: 78,
+                padding: "10px 12px calc(10px + env(safe-area-inset-bottom))",
+                background: "linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0))",
+                scrollbarWidth: "none",
+              }}
+            >
+              {media.map((m, i) => {
+                const active = i === index;
+                return (
                   <button
-                    key={photo.id}
-                    data-photo-index={index}
-                    onClick={() => navigateTo(index)}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={`flex-shrink-0 relative w-[62px] h-[52px] overflow-hidden rounded-xl border-2 transition-all duration-200 ${index === selectedIndex ? 'border-white scale-[1.04] shadow-lg' : 'border-white/20 hover:border-white/50'}`}
-                    aria-label={`Go to photo ${index + 1}`}
+                    key={m.id}
+                    data-idx={i}
+                    onClick={() => { setIndex(i); setScale(1); setPan({ x: 0, y: 0 }); }}
+                    aria-label={`View photo ${i + 1}`}
+                    style={{
+                      flex: "0 0 auto", width: 52, height: 52, borderRadius: 8, overflow: "hidden",
+                      border: active ? "2px solid #fff" : "1px solid rgba(255,255,255,0.15)",
+                      background: "#111", padding: 0,
+                    }}
                   >
-                    <img src={photo.url} alt="" className="w-full h-full object-cover" loading={Math.abs(index - (selectedIndex || 0)) <= 2 ? 'eager' : 'lazy'} />
-                    {index === selectedIndex && <div className="absolute inset-0 bg-white/10" />}
+                    <img src={m.url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </button>
-                ))}
-              </div>
-
-              {/* Background Overlay */}
-              <div
-                className="fixed inset-0 bg-black pointer-events-none z-[8999]"
-                style={{ opacity: isDismissing || dragOffset.y > 0 ? dismissOpacity * 0.95 : 1 }}
-              />
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Styles */}
-      <style>{`
-        .scrollbar-hide { scrollbar-width: none; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        
-        @media (prefers-reduced-motion: reduce) {
-          * { transition: none !important; animation: none !important; }
-        }
-      `}</style>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function IconGlass({ children, onClick, label }: { children: React.ReactNode; onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        width: 40, height: 40, borderRadius: 999,
+        background: "rgba(0,0,0,0.55)", border: "1px solid rgba(255,255,255,0.12)",
+        backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}
+    >
+      {children}
+    </button>
   );
 }
