@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { Card, SectionTitle } from "../ui";
 import {
-  Image as ImageIcon, Video, FileText, Package, Download, MoreVertical,
-  Pencil, Trash2, Share2, UploadCloud, File as FileIcon,
+  Image as ImageIcon, Video, FileText, Package, Download, ChevronRight,
+  Trash2, Share2, UploadCloud, File as FileIcon, ExternalLink, X,
 } from "lucide-react";
 import {
   useFiles, categorizeFile, formatBytes, timeAgo,
-  softDeleteFile, renameFile, createSignedUrl, type FileCategory, type FileRow,
+  softDeleteFile, createSignedUrl, type FileCategory, type FileRow,
 } from "@/hooks/useFiles";
 
 const TABS: { id: "all" | FileCategory; label: string }[] = [
