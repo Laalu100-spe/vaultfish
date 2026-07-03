@@ -22,15 +22,16 @@ function Row({
 }: { title: string; desc?: string; right?: React.ReactNode; onClick?: () => void }) {
   const Comp: any = onClick ? "button" : "div";
   return (
-    <Comp onClick={onClick} className="w-full flex items-center justify-between gap-3 text-left" style={{ padding: "14px 16px" }}>
-      <div className="min-w-0">
-        <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.92)" }}>{title}</div>
-        {desc && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{desc}</div>}
+    <Comp onClick={onClick} className="w-full flex items-center justify-between gap-3 text-left" style={{ padding: "14px 16px", overflow: "hidden" }}>
+      <div className="min-w-0 flex-1" style={{ overflow: "hidden" }}>
+        <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.92)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</div>
+        {desc && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{desc}</div>}
       </div>
-      <div className="shrink-0">{right}</div>
+      <div className="shrink-0" style={{ whiteSpace: "nowrap" }}>{right}</div>
     </Comp>
   );
 }
+
 
 export function SettingsScreen() {
   const { user, signOut } = useAuth();
