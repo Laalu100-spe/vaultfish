@@ -189,51 +189,104 @@ export function GalleryScreen() {
 
   if (loading) return <div className="text-muted text-sm">Loading gallery…</div>;
 
-  if (media.length === 0) {
-    return (
-      <div className="flex flex-col items-center text-center py-20">
-        <div style={{ width: 72, height: 72, borderRadius: 999, background: "rgba(77,144,254,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <ImageIcon size={30} color="#4d90fe" strokeWidth={1.5} />
-        </div>
-        <div style={{ marginTop: 16, fontSize: 16, fontWeight: 600, color: "#fff" }}>No photos or videos yet</div>
-        <div style={{ marginTop: 6, fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Upload media to see it here</div>
+  const emptyState = (
+    <div className="flex flex-col items-center text-center py-20">
+      <div style={{ width: 72, height: 72, borderRadius: 999, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Camera size={48} color="rgba(255,255,255,0.2)" strokeWidth={1.5} />
       </div>
-    );
-  }
+      <div style={{ marginTop: 16, fontFamily: '"Inter", sans-serif', fontSize: 16, fontWeight: 600, color: "#fff" }}>No photos yet</div>
+      <div style={{ marginTop: 6, fontFamily: '"Inter", sans-serif', fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Upload images using the Upload button</div>
+      <button
+        onClick={onUploadClick}
+        disabled={uploading}
+        className="mt-5"
+        style={{ background: "#4d90fe", color: "#fff", borderRadius: 10, padding: "10px 18px", fontSize: 13, fontWeight: 600, fontFamily: '"Inter", sans-serif' }}
+      >
+        {uploading ? "Uploading…" : "Upload"}
+      </button>
+    </div>
+  );
 
   return (
-    <div ref={containerRef}>
-      <div className="mb-5 flex items-end justify-between">
+    <div ref={containerRef} className="relative">
+      <input ref={uploadInputRef} type="file" accept="image/*,video/*" multiple hidden onChange={onFilesPicked} />
+
+      <div className="mb-4 flex items-end justify-between">
         <div>
           <h1 style={{ fontFamily: '"Inter", sans-serif', fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em" }}>Gallery</h1>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{media.length} items</p>
         </div>
       </div>
 
-      <div
-        role="grid"
-        aria-label="Photo grid"
-        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 3 }}
-      >
-        {media.map((m, i) => (
-          <motion.button
-            key={m.id}
-            layoutId={`vf-photo-${m.id}`}
-            onClick={() => setIndex(i)}
-            className="relative overflow-hidden bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-            style={{ aspectRatio: "1/1", borderRadius: 4, cursor: "zoom-in" }}
-            whileTap={{ scale: 0.97 }}
-            aria-label={`Open ${m.row.file_name}`}
-          >
-            <img src={m.url} alt={m.row.file_name} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            {m.kind === "video" && (
-              <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.25)" }}>
-                <Play size={22} color="#fff" fill="#fff" />
-              </div>
-            )}
-          </motion.button>
-        ))}
+      <div className="mb-4 flex gap-5 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        {(["all", "photos", "videos"] as FilterTab[]).map((t) => {
+          const active = tab === t;
+          const label = t === "all" ? "All" : t === "photos" ? "Photos" : "Videos";
+          return (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className="relative"
+              style={{
+                fontFamily: '"Inter", sans-serif', fontSize: 13,
+                fontWeight: active ? 600 : 500,
+                color: active ? "#fff" : "rgba(255,255,255,0.4)",
+                padding: "10px 2px", background: "transparent",
+              }}
+            >
+              {label} <span style={{ opacity: 0.6, marginLeft: 4 }}>· {counts[t]}</span>
+              {active && (
+                <span style={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 2, background: "#4d90fe" }} />
+              )}
+            </button>
+          );
+        })}
       </div>
+
+      {media.length === 0 ? emptyState : (
+        <div
+          role="grid"
+          aria-label="Photo grid"
+          className="vf-gallery-grid"
+        >
+          {media.map((m, i) => (
+            <motion.button
+              key={m.id}
+              layoutId={`vf-photo-${m.id}`}
+              onClick={() => setIndex(i)}
+              className="relative overflow-hidden bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 vf-gallery-cell"
+              whileTap={{ scale: 0.97 }}
+              aria-label={`Open ${m.row.file_name}`}
+            >
+              <img src={m.url} alt={m.row.file_name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              {m.kind === "video" && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.25)" }}>
+                  <Play size={22} color="#fff" fill="#fff" />
+                </div>
+              )}
+            </motion.button>
+          ))}
+        </div>
+      )}
+
+      {media.length > 0 && (
+        <button
+          onClick={onUploadClick}
+          aria-label="Upload photos or videos"
+          className="fixed"
+          style={{
+            right: 20, bottom: "calc(84px + env(safe-area-inset-bottom))",
+            width: 52, height: 52, borderRadius: 999,
+            background: "#4d90fe", color: "#fff",
+            boxShadow: "0 4px 20px rgba(77,144,254,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 40, border: "none",
+          }}
+        >
+          <Plus size={24} color="#fff" />
+        </button>
+      )}
+
 
       <AnimatePresence>
         {current && (
