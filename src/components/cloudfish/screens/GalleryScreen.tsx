@@ -37,8 +37,22 @@ const SWIPE_NAV = 90;
 const MAX_ZOOM = 8;
 
 export function GalleryScreen() {
+  const { user } = useAuth();
   const { files, loading } = useFiles();
-  const media = useSignedMedia(files);
+  const allMedia = useSignedMedia(files);
+  const [tab, setTab] = useState<FilterTab>("all");
+  const media = useMemo(() => {
+    if (tab === "photos") return allMedia.filter((m) => m.kind === "image");
+    if (tab === "videos") return allMedia.filter((m) => m.kind === "video");
+    return allMedia;
+  }, [allMedia, tab]);
+  const counts = useMemo(() => ({
+    all: allMedia.length,
+    photos: allMedia.filter((m) => m.kind === "image").length,
+    videos: allMedia.filter((m) => m.kind === "video").length,
+  }), [allMedia]);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [index, setIndex] = useState<number | null>(null);
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -52,6 +66,26 @@ export function GalleryScreen() {
 
   const current = index !== null ? media[index] : null;
   const canNav = scale <= 1.02;
+
+  const onUploadClick = () => uploadInputRef.current?.click();
+  const onFilesPicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const list = e.target.files; if (!list || !user) return;
+    const arr = Array.from(list); e.target.value = "";
+    setUploading(true);
+    try {
+      for (const f of arr) {
+        const path = `${user.id}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g, "_")}`;
+        const { error } = await supabase.storage.from("user-files").upload(path, f, { upsert: false, contentType: f.type });
+        if (error) { toast.error(`${f.name}: ${error.message}`); continue; }
+        await supabase.from("file_metadata").insert({
+          user_id: user.id, file_name: f.name, file_size: f.size,
+          file_type: f.type || null, storage_path: path,
+        });
+      }
+      toast.success(`Uploaded ${arr.length} item${arr.length === 1 ? "" : "s"}`);
+    } finally { setUploading(false); }
+  };
+
 
   const close = useCallback(() => {
     setIndex(null);
