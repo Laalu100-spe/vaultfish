@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
-import { ChevronLeft, UploadCloud, ImageIcon, Play, X, Share2, Trash2, Download } from "lucide-react";
+import { ChevronLeft, Camera, Play, X, Share2, Trash2, Download, Plus } from "lucide-react";
 import { useFiles, categorizeFile, createSignedUrl, softDeleteFile, type FileRow } from "@/hooks/useFiles";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+
+type FilterTab = "all" | "photos" | "videos";
 
 type Media = { id: string; row: FileRow; url: string; kind: "image" | "video" };
 
