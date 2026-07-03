@@ -33,9 +33,8 @@ const CAT_ICON: Record<FileCategory, any> = {
 export function FilesScreen() {
   const { files, loading } = useFiles();
   const [tab, setTab] = useState<"all" | FileCategory>("all");
-  const [menuFor, setMenuFor] = useState<string | null>(null);
-  const [renameId, setRenameId] = useState<string | null>(null);
-  const [renameVal, setRenameVal] = useState("");
+  const [sheetFor, setSheetFor] = useState<FileRow | null>(null);
+  const [confirmDel, setConfirmDel] = useState<FileRow | null>(null);
 
   const counts = useMemo(() => {
     const m: Record<string, number> = { all: files.length };
@@ -50,6 +49,13 @@ export function FilesScreen() {
     () => (tab === "all" ? files : files.filter((f) => categorizeFile(f) === tab)),
     [files, tab],
   );
+
+  const openInTab = async (f: FileRow) => {
+    if (!f.storage_path) return toast.error("No storage path");
+    const url = await createSignedUrl(f.storage_path, 3600);
+    if (!url) return toast.error("Could not open file");
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const download = async (f: FileRow) => {
     if (!f.storage_path) return toast.error("No storage path");
@@ -67,17 +73,8 @@ export function FilesScreen() {
     toast.success("Link copied");
   };
 
-  const startRename = (f: FileRow) => { setRenameId(f.id); setRenameVal(f.file_name); setMenuFor(null); };
-  const commitRename = async () => {
-    if (renameId && renameVal.trim()) {
-      await renameFile(renameId, renameVal.trim());
-      toast.success("Renamed");
-    }
-    setRenameId(null);
-  };
-
   const del = async (f: FileRow) => {
-    setMenuFor(null);
+    setConfirmDel(null); setSheetFor(null);
     await softDeleteFile(f.id, f.storage_path);
     toast.success("Deleted");
   };
@@ -125,69 +122,120 @@ export function FilesScreen() {
             const cat = categorizeFile(f);
             const Icon = CAT_ICON[cat];
             return (
-              <div key={f.id} className="flex items-center gap-3 p-3 relative">
+              <button
+                key={f.id}
+                onClick={() => setSheetFor(f)}
+                className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
+              >
                 <div className="flex items-center justify-center shrink-0" style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <Icon size={18} strokeWidth={1.5} color="#9ca3af" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  {renameId === f.id ? (
-                    <input
-                      autoFocus
-                      value={renameVal}
-                      onChange={(e) => setRenameVal(e.target.value)}
-                      onBlur={commitRename}
-                      onKeyDown={(e) => { if (e.key === "Enter") commitRename(); if (e.key === "Escape") setRenameId(null); }}
-                      className="w-full bg-transparent outline-none text-sm font-semibold"
-                      style={{ borderBottom: "1px solid #4d90fe", color: "#fff" }}
-                    />
-                  ) : (
-                    <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {f.file_name}
-                    </div>
-                  )}
+                  <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {f.file_name}
+                  </div>
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
                     {formatBytes(f.file_size)} · {timeAgo(f.created_at)}
                   </div>
                 </div>
-                <button
-                  onClick={() => setMenuFor(menuFor === f.id ? null : f.id)}
-                  className="p-2 rounded-lg text-muted hover:text-white"
-                  aria-label="File options"
-                >
-                  <MoreVertical size={16} />
-                </button>
-                {menuFor === f.id && (
-                  <div
-                    className="absolute right-2 top-12 z-20"
-                    style={{
-                      background: "rgba(18,21,28,0.98)", border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: 10, padding: 6, minWidth: 160,
-                      boxShadow: "0 14px 40px rgba(0,0,0,0.5)",
-                    }}
-                    onMouseLeave={() => setMenuFor(null)}
-                  >
-                    {[
-                      { l: "Download", i: Download, fn: () => download(f) },
-                      { l: "Rename", i: Pencil, fn: () => startRename(f) },
-                      { l: "Share", i: Share2, fn: () => share(f) },
-                      { l: "Delete", i: Trash2, fn: () => del(f), danger: true },
-                    ].map((it) => (
-                      <button
-                        key={it.l}
-                        onClick={it.fn}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-left"
-                        style={{ fontSize: 13, color: it.danger ? "#f87171" : "rgba(255,255,255,0.85)" }}
-                      >
-                        <it.i size={14} strokeWidth={1.5} /> {it.l}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                <ChevronRight size={16} className="text-muted shrink-0" />
+              </button>
             );
           })}
         </Card>
       )}
+
+      {sheetFor && (
+        <FileSheet
+          file={sheetFor}
+          onClose={() => setSheetFor(null)}
+          onOpen={() => openInTab(sheetFor)}
+          onDownload={() => download(sheetFor)}
+          onShare={() => share(sheetFor)}
+          onDelete={() => { setConfirmDel(sheetFor); }}
+        />
+      )}
+      {confirmDel && createPortal(
+        <div
+          onClick={() => setConfirmDel(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 340, width: "100%", background: "rgba(14,17,24,0.98)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: 20, fontFamily: '"Inter", sans-serif' }}
+          >
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>Delete this file?</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{confirmDel.file_name}</div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setConfirmDel(null)} className="flex-1" style={{ background: "rgba(255,255,255,0.06)", color: "#fff", padding: 10, borderRadius: 8, fontSize: 13, fontWeight: 600 }}>Cancel</button>
+              <button onClick={() => del(confirmDel)} className="flex-1" style={{ background: "#ef4444", color: "#fff", padding: 10, borderRadius: 8, fontSize: 13, fontWeight: 600 }}>Delete</button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
+
+function FileSheet({
+  file, onClose, onOpen, onDownload, onShare, onDelete,
+}: {
+  file: FileRow; onClose: () => void;
+  onOpen: () => void; onDownload: () => void; onShare: () => void; onDelete: () => void;
+}) {
+  return createPortal(
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 500, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%", maxWidth: 480,
+          background: "rgba(14,17,24,0.97)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+          borderRadius: "20px 20px 0 0", padding: 24,
+          fontFamily: '"Inter", sans-serif',
+          paddingBottom: "calc(24px + env(safe-area-inset-bottom))",
+        }}
+      >
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.2)", margin: "0 auto 16px" }} />
+        <div className="flex items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <div style={{ fontSize: 16, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.file_name}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{file.file_type ?? "file"} · {formatBytes(file.file_size)}</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ width: 32, height: 32, borderRadius: 999, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <X size={16} color="#fff" />
+          </button>
+        </div>
+        <div className="mt-5 flex flex-col gap-2">
+          <SheetAction icon={ExternalLink} label="Open" onClick={onOpen} />
+          <SheetAction icon={Download} label="Download" onClick={onDownload} />
+          <SheetAction icon={Share2} label="Share" onClick={onShare} />
+          <SheetAction icon={Trash2} label="Delete" danger onClick={onDelete} />
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function SheetAction({ icon: Icon, label, danger, onClick }: { icon: any; label: string; danger?: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3"
+      style={{
+        padding: "14px 16px", borderRadius: 12,
+        background: danger ? "rgba(239,68,68,0.08)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${danger ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.06)"}`,
+        color: danger ? "#f87171" : "#fff",
+        fontSize: 14, fontWeight: 500, fontFamily: '"Inter", sans-serif',
+      }}
+    >
+      <Icon size={18} strokeWidth={1.5} /> {label}
+    </button>
+  );
+}
+
