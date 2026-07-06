@@ -33,21 +33,27 @@ const CAT_ICON: Record<FileCategory, any> = {
 
 export function FilesScreen() {
   const { files, loading } = useFiles();
-  const [tab, setTab] = useState<"all" | FileCategory>("all");
+  const [tab, setTab] = useState<"all" | FileCategory | "whatsapp">("all");
   const [sheetFor, setSheetFor] = useState<FileRow | null>(null);
   const [confirmDel, setConfirmDel] = useState<FileRow | null>(null);
 
   const counts = useMemo(() => {
-    const m: Record<string, number> = { all: files.length };
+    const m: Record<string, number> = { all: files.length, whatsapp: 0 };
     for (const f of files) {
       const c = categorizeFile(f);
       m[c] = (m[c] ?? 0) + 1;
+      if (f.source === "whatsapp") m.whatsapp = (m.whatsapp ?? 0) + 1;
     }
     return m;
   }, [files]);
 
   const visible = useMemo(
-    () => (tab === "all" ? files : files.filter((f) => categorizeFile(f) === tab)),
+    () =>
+      tab === "all"
+        ? files
+        : tab === "whatsapp"
+        ? files.filter((f) => f.source === "whatsapp")
+        : files.filter((f) => categorizeFile(f) === tab),
     [files, tab],
   );
 
