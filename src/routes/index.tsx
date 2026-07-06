@@ -9,6 +9,7 @@ import { UploadScreen } from "@/components/cloudfish/screens/UploadScreen";
 import { AnalyticsScreen } from "@/components/cloudfish/screens/AnalyticsScreen";
 import { CleanScreen } from "@/components/cloudfish/screens/CleanScreen";
 import { SettingsScreen } from "@/components/cloudfish/screens/SettingsScreen";
+import { WhatsAppScreen } from "@/components/cloudfish/screens/WhatsAppScreen";
 import { Onboarding } from "@/components/cloudfish/Onboarding";
 import { LoadingOverlay } from "@/components/cloudfish/LoadingOverlay";
 import {
