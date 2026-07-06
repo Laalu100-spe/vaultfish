@@ -16,6 +16,7 @@ export type FileRow = {
   thumbnail_url: string | null;
   created_at: string;
   deleted_at: string | null;
+  source: string | null;
 };
 
 export type FileCategory = "photos" | "videos" | "documents" | "apk" | "downloads" | "other";
