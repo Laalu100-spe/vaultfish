@@ -109,6 +109,9 @@ function AuthedApp() {
           {screen === "settings" && (
             <WithSkeleton skeleton={<GenericSkeleton />}><SettingsScreen /></WithSkeleton>
           )}
+          {screen === "whatsapp" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}><WhatsAppScreen /></WithSkeleton>
+          )}
         </div>
       </Layout>
     </>
