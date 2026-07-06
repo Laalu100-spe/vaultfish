@@ -6,6 +6,7 @@ import {
   ArrowUpFromLine,
   TrendingUp,
   SlidersHorizontal,
+  MessageCircle,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { DecreasingLinesIcon } from "./PlatformIcons";
