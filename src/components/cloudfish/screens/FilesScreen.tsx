@@ -11,11 +11,12 @@ import {
   softDeleteFile, createSignedUrl, type FileCategory, type FileRow,
 } from "@/hooks/useFiles";
 
-const TABS: { id: "all" | FileCategory; label: string }[] = [
+const TABS: { id: "all" | FileCategory | "whatsapp"; label: string }[] = [
   { id: "all", label: "All" },
   { id: "photos", label: "Photos" },
   { id: "videos", label: "Videos" },
   { id: "documents", label: "Documents" },
+  { id: "whatsapp", label: "WhatsApp" },
   { id: "apk", label: "APK" },
   { id: "downloads", label: "Downloads" },
   { id: "other", label: "Other" },
