@@ -6,6 +6,7 @@ import {
   ArrowUpFromLine,
   TrendingUp,
   SlidersHorizontal,
+  MessageCircle,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { DecreasingLinesIcon } from "./PlatformIcons";
@@ -47,12 +48,13 @@ function MascotFish() {
   );
 }
 
-export type ScreenId = "home" | "gallery" | "files" | "clouds" | "upload" | "analytics" | "clean" | "settings";
+export type ScreenId = "home" | "gallery" | "files" | "whatsapp" | "clouds" | "upload" | "analytics" | "clean" | "settings";
 
 const NAV: { id: ScreenId; label: string; icon: any }[] = [
   { id: "home", label: "Home", icon: House },
   { id: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
   { id: "files", label: "Files", icon: Files },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
   { id: "clouds", label: "Clouds", icon: Layers },
   { id: "upload", label: "Upload", icon: ArrowUpFromLine },
   { id: "analytics", label: "Analytics", icon: TrendingUp },

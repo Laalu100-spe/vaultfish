@@ -62,6 +62,7 @@ export type Database = {
           id: string
           is_duplicate: boolean
           last_modified: string
+          source: string | null
           storage_path: string | null
           thumbnail_url: string | null
           user_id: string
@@ -77,6 +78,7 @@ export type Database = {
           id?: string
           is_duplicate?: boolean
           last_modified?: string
+          source?: string | null
           storage_path?: string | null
           thumbnail_url?: string | null
           user_id: string
@@ -92,6 +94,7 @@ export type Database = {
           id?: string
           is_duplicate?: boolean
           last_modified?: string
+          source?: string | null
           storage_path?: string | null
           thumbnail_url?: string | null
           user_id?: string
