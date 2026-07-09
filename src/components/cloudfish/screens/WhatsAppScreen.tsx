@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useFiles, formatBytes, createSignedUrl, softDeleteFile, type FileRow } from "@/hooks/useFiles";
 
-type WACategory = "all" | "photos" | "videos" | "voice" | "documents";
+type WACategory = "all" | "photos" | "videos" | "documents" | "contact";
 
 function classify(f: FileRow): Exclude<WACategory, "all"> {
   const t = (f.file_type ?? "").toLowerCase();
