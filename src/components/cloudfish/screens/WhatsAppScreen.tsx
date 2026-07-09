@@ -662,6 +662,62 @@ export function WhatsAppScreen() {
       {preview && <FullscreenImage url={preview} onClose={() => setPreview(null)} />}
       {audio && <AudioBar url={audio.url} name={audio.name} onClose={() => setAudio(null)} />}
 
+      {activeBatch && (
+        <div
+          onClick={() => setActiveBatch(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 150,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--card-solid, #0e1118)", borderTop: "1px solid rgba(255,255,255,0.08)",
+              borderTopLeftRadius: 20, borderTopRightRadius: 20,
+              width: "100%", maxWidth: 640, maxHeight: "80vh", overflowY: "auto",
+              padding: "20px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "var(--foreground)" }}>
+                {batches.find((b) => b.key === activeBatch)?.label}
+              </div>
+              <button onClick={() => setActiveBatch(null)} style={{ color: "var(--muted)" }}><X size={18} /></button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {filesInBatch(activeBatch).map((f) => (
+                <div
+                  key={f.id}
+                  onClick={async () => {
+                    if (!f.storage_path) return;
+                    const url = await createSignedUrl(f.storage_path, 3600);
+                    if (!url) return;
+                    if ((f.file_type ?? "").startsWith("image/")) setPreview(url);
+                    else if ((f.file_type ?? "").startsWith("audio/")) setAudio({ url, name: f.file_name });
+                    else window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "10px 12px",
+                    borderRadius: 10, cursor: "pointer",
+                    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {f.file_name}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
+                      {formatBytes(f.file_size)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmClean && (
         <div
           onClick={() => setConfirmClean(null)}
