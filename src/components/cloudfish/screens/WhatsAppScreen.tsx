@@ -196,10 +196,35 @@ export function WhatsAppScreen() {
     total: waFiles.reduce((s, f) => s + (f.file_size || 0), 0),
   };
 
-  const visible = useMemo(() => {
-    if (tab === "all") return waFiles;
-    return categorized[tab];
-  }, [tab, waFiles, categorized]);
+  // Group files uploaded within ~2 minutes of each other into a "batch"
+  const batches = useMemo(() => {
+    const sorted = [...waFiles].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+    const groups: { key: string; label: string; files: FileRow[]; bytes: number; date: Date }[] = [];
+    const WINDOW = 2 * 60 * 1000;
+    for (const f of sorted) {
+      const t = new Date(f.created_at).getTime();
+      const last = groups[groups.length - 1];
+      if (last && t - new Date(last.files[last.files.length - 1].created_at).getTime() <= WINDOW) {
+        last.files.push(f);
+        last.bytes += f.file_size || 0;
+      } else {
+        const d = new Date(f.created_at);
+        groups.push({
+          key: f.created_at,
+          label: `Backup — ${d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`,
+          files: [f],
+          bytes: f.file_size || 0,
+          date: d,
+        });
+      }
+    }
+    return groups.reverse();
+  }, [waFiles]);
+
+  const [activeBatch, setActiveBatch] = useState<string | null>(null);
+
 
   const openPicker = () => fileInputRef.current?.click();
 
