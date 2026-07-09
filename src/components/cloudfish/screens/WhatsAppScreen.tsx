@@ -424,7 +424,7 @@ export function WhatsAppScreen() {
               fontWeight: 600, fontSize: 13,
             }}
           >
-            Upload WhatsApp Files
+            Select WhatsApp Export Files
           </button>
         </div>
       ) : (
