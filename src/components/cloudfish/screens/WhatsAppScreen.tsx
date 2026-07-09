@@ -499,7 +499,7 @@ export function WhatsAppScreen() {
             </div>
           )}
 
-          {(tab === "all" || tab === "voice") && categorized.voice.length > 0 && (
+          {tab === "all" && categorized.voice.length > 0 && (
             <div>
               {tab === "all" && <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Voice Notes</div>}
               <div style={{
