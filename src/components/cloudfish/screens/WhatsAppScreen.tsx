@@ -9,8 +9,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useFiles, formatBytes, createSignedUrl, softDeleteFile, type FileRow } from "@/hooks/useFiles";
 
 type WACategory = "all" | "photos" | "videos" | "documents" | "contact";
+type WAClass = "photos" | "videos" | "voice" | "documents";
 
-function classify(f: FileRow): Exclude<WACategory, "all"> {
+function classify(f: FileRow): WAClass {
   const t = (f.file_type ?? "").toLowerCase();
   const n = (f.file_name ?? "").toLowerCase();
   if (t.startsWith("image/") || /\.(png|jpe?g|gif|webp|heic|bmp)$/.test(n)) return "photos";
