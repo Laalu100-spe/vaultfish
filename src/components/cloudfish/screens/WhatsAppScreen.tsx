@@ -476,6 +476,45 @@ export function WhatsAppScreen() {
             ))}
           </div>
 
+          {/* By Contact — batches by upload session */}
+          {tab === "contact" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {batches.length === 0 && (
+                <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                  No upload batches yet.
+                </div>
+              )}
+              {batches.map((b) => (
+                <button
+                  key={b.key}
+                  onClick={() => setActiveBatch(b.key)}
+                  className="vf-wa-batch-card"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
+                    borderRadius: 14, textAlign: "left", width: "100%",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 999, background: "rgba(37,211,102,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <MessageCircle size={20} color={WA_GREEN} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {b.label}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
+                      {b.files.length} file{b.files.length === 1 ? "" : "s"} · {formatBytes(b.bytes)}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Content per tab */}
           {(tab === "all" || tab === "photos") && categorized.photos.length > 0 && (
             <div>
