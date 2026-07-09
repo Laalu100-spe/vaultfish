@@ -303,9 +303,20 @@ export function WhatsAppScreen() {
     { id: "all", label: "All" },
     { id: "photos", label: "Photos" },
     { id: "videos", label: "Videos" },
-    { id: "voice", label: "Voice Notes" },
     { id: "documents", label: "Documents" },
+    { id: "contact", label: "By Contact" },
   ];
+
+  const tabCount = (id: WACategory): number => {
+    if (id === "contact") return batches.length;
+    return counts[id as keyof typeof counts];
+  };
+
+  const filesInBatch = (batchKey: string | null): FileRow[] => {
+    if (!batchKey) return [];
+    const b = batches.find((x) => x.key === batchKey);
+    return b ? b.files : [];
+  };
 
   const empty = waFiles.length === 0;
 
