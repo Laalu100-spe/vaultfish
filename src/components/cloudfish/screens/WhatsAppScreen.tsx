@@ -8,9 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useFiles, formatBytes, createSignedUrl, softDeleteFile, type FileRow } from "@/hooks/useFiles";
 
-type WACategory = "all" | "photos" | "videos" | "voice" | "documents";
+type WACategory = "all" | "photos" | "videos" | "documents" | "contact";
+type WAClass = "photos" | "videos" | "voice" | "documents";
 
-function classify(f: FileRow): Exclude<WACategory, "all"> {
+function classify(f: FileRow): WAClass {
   const t = (f.file_type ?? "").toLowerCase();
   const n = (f.file_name ?? "").toLowerCase();
   if (t.startsWith("image/") || /\.(png|jpe?g|gif|webp|heic|bmp)$/.test(n)) return "photos";
@@ -195,10 +196,35 @@ export function WhatsAppScreen() {
     total: waFiles.reduce((s, f) => s + (f.file_size || 0), 0),
   };
 
-  const visible = useMemo(() => {
-    if (tab === "all") return waFiles;
-    return categorized[tab];
-  }, [tab, waFiles, categorized]);
+  // Group files uploaded within ~2 minutes of each other into a "batch"
+  const batches = useMemo(() => {
+    const sorted = [...waFiles].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+    const groups: { key: string; label: string; files: FileRow[]; bytes: number; date: Date }[] = [];
+    const WINDOW = 2 * 60 * 1000;
+    for (const f of sorted) {
+      const t = new Date(f.created_at).getTime();
+      const last = groups[groups.length - 1];
+      if (last && t - new Date(last.files[last.files.length - 1].created_at).getTime() <= WINDOW) {
+        last.files.push(f);
+        last.bytes += f.file_size || 0;
+      } else {
+        const d = new Date(f.created_at);
+        groups.push({
+          key: f.created_at,
+          label: `Backup — ${d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`,
+          files: [f],
+          bytes: f.file_size || 0,
+          date: d,
+        });
+      }
+    }
+    return groups.reverse();
+  }, [waFiles]);
+
+  const [activeBatch, setActiveBatch] = useState<string | null>(null);
+
 
   const openPicker = () => fileInputRef.current?.click();
 
@@ -277,9 +303,20 @@ export function WhatsAppScreen() {
     { id: "all", label: "All" },
     { id: "photos", label: "Photos" },
     { id: "videos", label: "Videos" },
-    { id: "voice", label: "Voice Notes" },
     { id: "documents", label: "Documents" },
+    { id: "contact", label: "By Contact" },
   ];
+
+  const tabCount = (id: WACategory): number => {
+    if (id === "contact") return batches.length;
+    return counts[id as keyof typeof counts];
+  };
+
+  const filesInBatch = (batchKey: string | null): FileRow[] => {
+    if (!batchKey) return [];
+    const b = batches.find((x) => x.key === batchKey);
+    return b ? b.files : [];
+  };
 
   const empty = waFiles.length === 0;
 
@@ -329,7 +366,7 @@ export function WhatsAppScreen() {
             fontWeight: 600, fontSize: 14,
           }}
         >
-          Upload WhatsApp Files
+          Select WhatsApp Export Files
         </button>
       </div>
 
@@ -387,7 +424,7 @@ export function WhatsAppScreen() {
               fontWeight: 600, fontSize: 13,
             }}
           >
-            Upload WhatsApp Files
+            Select WhatsApp Export Files
           </button>
         </div>
       ) : (
@@ -396,7 +433,7 @@ export function WhatsAppScreen() {
           <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
             {TABS.map((t) => {
               const active = tab === t.id;
-              const c = counts[t.id];
+              const c = tabCount(t.id);
               return (
                 <button
                   key={t.id}
@@ -439,6 +476,45 @@ export function WhatsAppScreen() {
             ))}
           </div>
 
+          {/* By Contact — batches by upload session */}
+          {tab === "contact" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {batches.length === 0 && (
+                <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                  No upload batches yet.
+                </div>
+              )}
+              {batches.map((b) => (
+                <button
+                  key={b.key}
+                  onClick={() => setActiveBatch(b.key)}
+                  className="vf-wa-batch-card"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
+                    borderRadius: 14, textAlign: "left", width: "100%",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 999, background: "rgba(37,211,102,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <MessageCircle size={20} color={WA_GREEN} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 14, fontWeight: 600, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {b.label}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
+                      {b.files.length} file{b.files.length === 1 ? "" : "s"} · {formatBytes(b.bytes)}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Content per tab */}
           {(tab === "all" || tab === "photos") && categorized.photos.length > 0 && (
             <div>
@@ -462,7 +538,7 @@ export function WhatsAppScreen() {
             </div>
           )}
 
-          {(tab === "all" || tab === "voice") && categorized.voice.length > 0 && (
+          {tab === "all" && categorized.voice.length > 0 && (
             <div>
               {tab === "all" && <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Voice Notes</div>}
               <div style={{
@@ -585,6 +661,62 @@ export function WhatsAppScreen() {
 
       {preview && <FullscreenImage url={preview} onClose={() => setPreview(null)} />}
       {audio && <AudioBar url={audio.url} name={audio.name} onClose={() => setAudio(null)} />}
+
+      {activeBatch && (
+        <div
+          onClick={() => setActiveBatch(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 150,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--card-solid, #0e1118)", borderTop: "1px solid rgba(255,255,255,0.08)",
+              borderTopLeftRadius: 20, borderTopRightRadius: 20,
+              width: "100%", maxWidth: 640, maxHeight: "80vh", overflowY: "auto",
+              padding: "20px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "var(--foreground)" }}>
+                {batches.find((b) => b.key === activeBatch)?.label}
+              </div>
+              <button onClick={() => setActiveBatch(null)} style={{ color: "var(--muted)" }}><X size={18} /></button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {filesInBatch(activeBatch).map((f) => (
+                <div
+                  key={f.id}
+                  onClick={async () => {
+                    if (!f.storage_path) return;
+                    const url = await createSignedUrl(f.storage_path, 3600);
+                    if (!url) return;
+                    if ((f.file_type ?? "").startsWith("image/")) setPreview(url);
+                    else if ((f.file_type ?? "").startsWith("audio/")) setAudio({ url, name: f.file_name });
+                    else window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "10px 12px",
+                    borderRadius: 10, cursor: "pointer",
+                    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {f.file_name}
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
+                      {formatBytes(f.file_size)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmClean && (
         <div

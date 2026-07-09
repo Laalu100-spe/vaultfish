@@ -133,6 +133,7 @@ export function SettingsScreen() {
       <div>
         <SectionLabel>Preferences</SectionLabel>
         <Card className="divide-y divide-border">
+          <Row title="Dark Mode" desc={prefs.dark_mode ? "🌙 Dark theme" : "☀️ Light theme"} right={<Toggle on={prefs.dark_mode} onChange={(v) => { update({ dark_mode: v }); toast.success(v ? "Dark mode on" : "Light mode on"); }} />} />
           <Row title="Auto Optimize" desc="Distribute uploads automatically" right={<Toggle on={prefs.auto_optimize} onChange={(v) => { update({ auto_optimize: v }); toast.success(v ? "Auto backup enabled" : "Auto backup disabled"); }} />} />
           <Row title="Smart Split" desc="Split large files across clouds" right={<Toggle on={prefs.smart_split} onChange={(v) => update({ smart_split: v })} />} />
           <Row title="Encryption" desc="End-to-end encryption for uploads" right={<Toggle on={prefs.encryption_enabled} onChange={(v) => { update({ encryption_enabled: v }); if (v) toast.success("Encryption enabled — your files are protected"); }} />} />

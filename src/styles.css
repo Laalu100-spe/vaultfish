@@ -45,12 +45,122 @@
   --background: #060810;
   --sidebar: rgba(8,9,14,0.85);
   --card: rgba(13,15,22,0.72);
+  --card-solid: #0e1118;
   --border: rgba(255,255,255,0.07);
   --border-hover: rgba(255,255,255,0.14);
   --accent-blue: #4d90fe;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-amber: #f59e0b;
   --foreground: #f0ede6;
   --muted: #6b7280;
+  --nav-inactive: rgba(255,255,255,0.35);
+  --topbar-bg: rgba(8,9,14,0.85);
+  --bottomnav-bg: rgba(8,9,14,0.90);
+  --sheet-bg: rgba(14,17,24,0.98);
+  --hairline: rgba(255,255,255,0.06);
+  --sidebar-active-bg: rgba(77,144,254,0.10);
+  --card-shadow: none;
+  color-scheme: dark;
 }
+
+html.light, .light {
+  --background: #fafaf9;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --card-solid: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --border-hover: rgba(0,0,0,0.14);
+  --accent-blue: #2563eb;
+  --accent-green: #16a34a;
+  --accent-red: #dc2626;
+  --accent-amber: #d97706;
+  --foreground: #14161c;
+  --muted: #6b7280;
+  --nav-inactive: rgba(20,22,28,0.45);
+  --topbar-bg: rgba(255,255,255,0.9);
+  --bottomnav-bg: rgba(255,255,255,0.95);
+  --sheet-bg: #ffffff;
+  --hairline: rgba(0,0,0,0.06);
+  --sidebar-active-bg: rgba(37,99,235,0.08);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  color-scheme: light;
+}
+
+html.light body,
+.light body {
+  background-color: #fafaf9 !important;
+  color: #14161c !important;
+}
+.light .app-bg { background-color: #fafaf9 !important; }
+.light .mesh-1,
+.light .mesh-2,
+.light .mesh-3,
+.light .mesh-4 { opacity: 0.35; }
+.light .sidebar-surface {
+  background: #ffffff !important;
+  border-right: 1px solid rgba(0,0,0,0.08) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.light .bg-card {
+  background: #ffffff !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.light .text-muted { color: #6b7280 !important; }
+.light h1, .light h2, .light h3, .light h4, .light h5, .light h6 { color: #14161c; }
+.light .section-label { color: rgba(20,22,28,0.55); }
+.light .vf-mobile-topbar {
+  background: rgba(255,255,255,0.9) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.light .vf-mobile-bottomnav {
+  background: rgba(255,255,255,0.95) !important;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+.light .vf-more-sheet {
+  background: #ffffff !important;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.08);
+}
+.light .vf-sidebar-item { color: #6b7280; }
+.light .vf-sidebar-item:hover { color: #14161c; background: rgba(0,0,0,0.03); }
+.light .vf-sidebar-item-active {
+  background: rgba(37,99,235,0.08) !important;
+  color: #2563eb !important;
+  border-left: 2px solid #2563eb;
+}
+.light .vf-logo-vault { color: #14161c !important; }
+.light .mascot-fish { filter: drop-shadow(0 6px 12px rgba(37,99,235,0.2)); }
+
+/* Force any white-in-dark inline colors to become foreground in light mode.
+   These are heuristics — the app relies heavily on inline styles. */
+.light [style*="color: #fff"],
+.light [style*="color:#fff"],
+.light [style*="color: rgba(255,255,255,0.92)"],
+.light [style*="color: rgba(255,255,255,0.95)"],
+.light [style*="color: rgba(255,255,255,0.9)"],
+.light [style*="color: rgba(255,255,255,0.85)"],
+.light [style*="color: rgba(255,255,255,0.8)"] {
+  color: #14161c !important;
+}
+.light [style*="color: rgba(255,255,255,0.7)"],
+.light [style*="color: rgba(255,255,255,0.6)"],
+.light [style*="color: rgba(255,255,255,0.5)"],
+.light [style*="color: rgba(255,255,255,0.45)"],
+.light [style*="color: rgba(255,255,255,0.4)"],
+.light [style*="color: rgba(255,255,255,0.35)"],
+.light [style*="color: rgba(255,255,255,0.3)"],
+.light [style*="color: rgba(255,255,255,0.25)"] {
+  color: #6b7280 !important;
+}
+
+html { transition: background-color 200ms ease, color 200ms ease; }
+body { transition: background-color 200ms ease, color 200ms ease; }
+
 
 @layer base {
   html, body {
@@ -445,4 +555,35 @@
 }
 @media (min-width: 1200px) {
   .vf-gallery-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Dark defaults for Layout classes referenced with light overrides */
+.vf-mobile-topbar {
+  background: rgba(8,9,14,0.85);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.vf-mobile-bottomnav {
+  background: rgba(8,9,14,0.90);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.vf-more-sheet {
+  background: rgba(14,17,24,0.98);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.4);
+}
+.vf-sidebar-item { color: #6b7280; }
+.vf-sidebar-item:hover { color: #e5e7eb; }
+.vf-sidebar-item-active {
+  background: rgba(77,144,254,0.10);
+  color: #4d90fe !important;
+}
+.vf-logo-vault { color: rgba(255,255,255,0.85); }
+.vf-more-item:hover { background: rgba(255,255,255,0.04); }
+.light .vf-more-item:hover { background: rgba(0,0,0,0.04); }
+
+/* Shift main content on desktop to account for fixed sidebar */
+@media (min-width: 768px) {
+  .vf-main-shift { margin-left: 240px; }
 }

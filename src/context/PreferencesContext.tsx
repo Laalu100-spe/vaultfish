@@ -58,6 +58,20 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     })();
   }, [user]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    if (prefs.dark_mode) {
+      root.classList.remove("light");
+      root.classList.add("dark");
+      root.style.colorScheme = "dark";
+    } else {
+      root.classList.remove("dark");
+      root.classList.add("light");
+      root.style.colorScheme = "light";
+    }
+  }, [prefs.dark_mode]);
+
   const update = async (patch: Partial<Preferences>) => {
     if (!user) return;
     setPrefs((p) => ({ ...p, ...patch }));
