@@ -433,7 +433,7 @@ export function WhatsAppScreen() {
           <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
             {TABS.map((t) => {
               const active = tab === t.id;
-              const c = counts[t.id];
+              const c = tabCount(t.id);
               return (
                 <button
                   key={t.id}
