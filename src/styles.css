@@ -140,23 +140,43 @@ html.light body,
    These are heuristics — the app relies heavily on inline styles. */
 .light [style*="color: #fff"],
 .light [style*="color:#fff"],
-.light [style*="color: rgba(255,255,255,0.92)"],
-.light [style*="color: rgba(255,255,255,0.95)"],
+.light [style*="color: #FFF"],
+.light [style*="color:#FFF"],
+.light [style*="color: white"],
+.light [style*="color:white"],
+.light [style*="color:rgba(255,255,255,0.92"],
+.light [style*="color: rgba(255,255,255,0.92"],
+.light [style*="color:rgba(255,255,255,0.95"],
+.light [style*="color: rgba(255,255,255,0.95"],
+.light [style*="color:rgba(255,255,255,0.9)"],
 .light [style*="color: rgba(255,255,255,0.9)"],
-.light [style*="color: rgba(255,255,255,0.85)"],
+.light [style*="color:rgba(255,255,255,0.85"],
+.light [style*="color: rgba(255,255,255,0.85"],
+.light [style*="color:rgba(255,255,255,0.8)"],
 .light [style*="color: rgba(255,255,255,0.8)"] {
   color: #14161c !important;
 }
-.light [style*="color: rgba(255,255,255,0.7)"],
-.light [style*="color: rgba(255,255,255,0.6)"],
-.light [style*="color: rgba(255,255,255,0.5)"],
-.light [style*="color: rgba(255,255,255,0.45)"],
+.light [style*="color:rgba(255,255,255,0.7"],
+.light [style*="color: rgba(255,255,255,0.7"],
+.light [style*="color:rgba(255,255,255,0.6"],
+.light [style*="color: rgba(255,255,255,0.6"],
+.light [style*="color:rgba(255,255,255,0.5"],
+.light [style*="color: rgba(255,255,255,0.5"],
+.light [style*="color:rgba(255,255,255,0.45"],
+.light [style*="color: rgba(255,255,255,0.45"],
+.light [style*="color:rgba(255,255,255,0.4)"],
 .light [style*="color: rgba(255,255,255,0.4)"],
-.light [style*="color: rgba(255,255,255,0.35)"],
+.light [style*="color:rgba(255,255,255,0.35"],
+.light [style*="color: rgba(255,255,255,0.35"],
+.light [style*="color:rgba(255,255,255,0.3)"],
 .light [style*="color: rgba(255,255,255,0.3)"],
-.light [style*="color: rgba(255,255,255,0.25)"] {
+.light [style*="color:rgba(255,255,255,0.25"],
+.light [style*="color: rgba(255,255,255,0.25"],
+.light [style*="color:rgba(255,255,255,0.2)"],
+.light [style*="color: rgba(255,255,255,0.2)"] {
   color: #6b7280 !important;
 }
+
 
 html { transition: background-color 200ms ease, color 200ms ease; }
 body { transition: background-color 200ms ease, color 200ms ease; }
