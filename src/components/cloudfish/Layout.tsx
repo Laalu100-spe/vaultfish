@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { DecreasingLinesIcon } from "./PlatformIcons";
+import { VaultFishMark } from "./VaultFishMark";
 
 function SmartCleanIcon({ size = 18, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
   const color = (style?.color as string) || "#6b7280";
