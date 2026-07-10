@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { VaultFishMark } from "./VaultFishMark";
 
 type Provider = "Google Drive" | "Dropbox" | "OneDrive";
 
