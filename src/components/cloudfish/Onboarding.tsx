@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { VaultFishMark } from "./VaultFishMark";
 
 type Provider = "Google Drive" | "Dropbox" | "OneDrive";
 
@@ -207,11 +208,11 @@ function ScreenWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, paddingBottom: 80 }}>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20 }}>
+        <VaultFishMark size={64} />
         <div style={{ display: "flex", lineHeight: 1, letterSpacing: "-0.04em", fontSize: 48 }}>
           <span style={{ fontWeight: 300, color: "rgba(255,255,255,0.9)" }}>Vault</span>
           <span style={{ fontWeight: 800, color: "#4d90fe" }}>Fish</span>
         </div>
-        <FishMascot size={64} />
         <p style={{ fontSize: 18, fontWeight: 400, color: "rgba(255,255,255,0.5)", letterSpacing: "-0.01em", textAlign: "center" }}>
           Swim across all your clouds
         </p>

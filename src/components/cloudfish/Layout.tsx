@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { DecreasingLinesIcon } from "./PlatformIcons";
+import { VaultFishMark } from "./VaultFishMark";
 
 function SmartCleanIcon({ size = 18, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
   const color = (style?.color as string) || "#6b7280";
@@ -63,10 +64,13 @@ function Logo({ size = 20 }: { size?: number }) {
   return (
     <div
       className="flex items-center vf-logo"
-      style={{ fontFamily: '"Inter", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.03em" }}
+      style={{ fontFamily: '"Inter", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.03em", gap: 8 }}
     >
-      <span className="vf-logo-vault" style={{ fontWeight: 300 }}>Vault</span>
-      <span style={{ fontWeight: 800, color: "#4d90fe" }}>Fish</span>
+      <VaultFishMark size={28} />
+      <span style={{ display: "inline-flex", alignItems: "baseline" }}>
+        <span className="vf-logo-vault" style={{ fontWeight: 300 }}>Vault</span>
+        <span style={{ fontWeight: 800, color: "#4d90fe" }}>Fish</span>
+      </span>
     </div>
   );
 }
