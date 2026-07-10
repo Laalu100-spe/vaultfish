@@ -63,10 +63,13 @@ function Logo({ size = 20 }: { size?: number }) {
   return (
     <div
       className="flex items-center vf-logo"
-      style={{ fontFamily: '"Inter", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.03em" }}
+      style={{ fontFamily: '"Inter", sans-serif', fontSize: size, lineHeight: 1, letterSpacing: "-0.03em", gap: 8 }}
     >
-      <span className="vf-logo-vault" style={{ fontWeight: 300 }}>Vault</span>
-      <span style={{ fontWeight: 800, color: "#4d90fe" }}>Fish</span>
+      <VaultFishMark size={28} />
+      <span style={{ display: "inline-flex", alignItems: "baseline" }}>
+        <span className="vf-logo-vault" style={{ fontWeight: 300 }}>Vault</span>
+        <span style={{ fontWeight: 800, color: "#4d90fe" }}>Fish</span>
+      </span>
     </div>
   );
 }
