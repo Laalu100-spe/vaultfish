@@ -44,6 +44,15 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href:
+          "data:image/svg+xml;utf8," +
+          encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 255 105"><path d="M 30 90 C 10 60, 20 25, 60 15 C 100 5, 150 10, 190 40 C 205 20, 225 15, 225 15 C 220 35, 218 45, 218 45 C 218 45, 220 55, 225 75 C 225 75, 205 70, 190 50 C 150 80, 100 85, 60 75 C 20 65, 10 60, 30 90 Z" fill="#14161c"/><circle cx="185" cy="38" r="6" fill="#FFFFFF" opacity="0.9"/></svg>'
+          ),
+      },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Inter+Tight:wght@700;800;900&display=swap" },
