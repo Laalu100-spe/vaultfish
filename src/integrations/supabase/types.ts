@@ -50,59 +50,191 @@ export type Database = {
         }
         Relationships: []
       }
-      file_metadata: {
+      file_shares: {
         Row: {
-          account_id: string | null
-          cloud_path: string | null
           created_at: string
-          deleted_at: string | null
-          file_name: string
-          file_size: number
-          file_type: string | null
+          expires_at: string
+          file_id: string
           id: string
-          is_duplicate: boolean
-          last_modified: string
-          source: string | null
-          storage_path: string | null
-          thumbnail_url: string | null
+          recipient: string | null
+          revoked: boolean
+          token: string
           user_id: string
         }
         Insert: {
-          account_id?: string | null
-          cloud_path?: string | null
           created_at?: string
-          deleted_at?: string | null
-          file_name: string
-          file_size?: number
-          file_type?: string | null
+          expires_at: string
+          file_id: string
           id?: string
-          is_duplicate?: boolean
-          last_modified?: string
-          source?: string | null
-          storage_path?: string | null
-          thumbnail_url?: string | null
+          recipient?: string | null
+          revoked?: boolean
+          token?: string
           user_id: string
         }
         Update: {
-          account_id?: string | null
-          cloud_path?: string | null
           created_at?: string
+          expires_at?: string
+          file_id?: string
+          id?: string
+          recipient?: string | null
+          revoked?: boolean
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_shares_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_text_index: {
+        Row: {
+          content: string
+          created_at: string
+          file_id: string
+          id: string
+          status: string
+          tsv: unknown
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          file_id: string
+          id?: string
+          status?: string
+          tsv?: unknown
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          file_id?: string
+          id?: string
+          status?: string
+          tsv?: unknown
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_text_index_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: true
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_versions: {
+        Row: {
+          created_at: string
+          file_id: string
+          filename: string
+          id: string
+          is_current: boolean
+          note: string | null
+          size_bytes: number
+          source_provider: string
+          storage_path: string | null
+          user_id: string
+          version_no: number
+        }
+        Insert: {
+          created_at?: string
+          file_id: string
+          filename: string
+          id?: string
+          is_current?: boolean
+          note?: string | null
+          size_bytes?: number
+          source_provider?: string
+          storage_path?: string | null
+          user_id: string
+          version_no?: number
+        }
+        Update: {
+          created_at?: string
+          file_id?: string
+          filename?: string
+          id?: string
+          is_current?: boolean
+          note?: string | null
+          size_bytes?: number
+          source_provider?: string
+          storage_path?: string | null
+          user_id?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_versions_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      files: {
+        Row: {
+          cloud_path: string | null
+          deleted_at: string | null
+          file_type: string | null
+          filename: string
+          id: string
+          is_duplicate: boolean
+          last_modified: string
+          size_bytes: number
+          source_account_id: string | null
+          source_provider: string
+          storage_path: string | null
+          thumbnail_url: string | null
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          cloud_path?: string | null
           deleted_at?: string | null
-          file_name?: string
-          file_size?: number
           file_type?: string | null
+          filename: string
           id?: string
           is_duplicate?: boolean
           last_modified?: string
-          source?: string | null
+          size_bytes?: number
+          source_account_id?: string | null
+          source_provider?: string
           storage_path?: string | null
           thumbnail_url?: string | null
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          cloud_path?: string | null
+          deleted_at?: string | null
+          file_type?: string | null
+          filename?: string
+          id?: string
+          is_duplicate?: boolean
+          last_modified?: string
+          size_bytes?: number
+          source_account_id?: string | null
+          source_provider?: string
+          storage_path?: string | null
+          thumbnail_url?: string | null
+          uploaded_at?: string
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "file_metadata_account_id_fkey"
-            columns: ["account_id"]
+            columns: ["source_account_id"]
             isOneToOne: false
             referencedRelation: "connected_accounts"
             referencedColumns: ["id"]
