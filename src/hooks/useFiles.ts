@@ -5,25 +5,25 @@ import { useAuth } from "@/context/AuthContext";
 export type FileRow = {
   id: string;
   user_id: string;
-  account_id: string | null;
-  file_name: string;
-  file_size: number;
+  source_account_id: string | null;
+  filename: string;
+  size_bytes: number;
   file_type: string | null;
   cloud_path: string | null;
   storage_path: string | null;
   last_modified: string;
   is_duplicate: boolean;
   thumbnail_url: string | null;
-  created_at: string;
+  uploaded_at: string;
   deleted_at: string | null;
-  source: string | null;
+  source_provider: string;
 };
 
 export type FileCategory = "photos" | "videos" | "documents" | "apk" | "downloads" | "other";
 
-export function categorizeFile(f: Pick<FileRow, "file_type" | "file_name">): FileCategory {
+export function categorizeFile(f: Pick<FileRow, "file_type" | "filename">): FileCategory {
   const t = (f.file_type ?? "").toLowerCase();
-  const n = (f.file_name ?? "").toLowerCase();
+  const n = (f.filename ?? "").toLowerCase();
   if (t.startsWith("image") || /\.(png|jpe?g|gif|webp|heic|bmp|svg)$/.test(n)) return "photos";
   if (t.startsWith("video") || /\.(mp4|mov|avi|mkv|webm|m4v)$/.test(n)) return "videos";
   if (
@@ -74,11 +74,11 @@ export function useFiles() {
     let active = true;
     const load = async () => {
       const { data } = await supabase
-        .from("file_metadata")
+        .from("files")
         .select("*")
         .eq("user_id", user.id)
         .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+        .order("uploaded_at", { ascending: false });
       if (active) {
         setFiles((data as any) ?? []);
         setLoading(false);
@@ -90,7 +90,7 @@ export function useFiles() {
       .channel(`file_metadata:${user.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "file_metadata", filter: `user_id=eq.${user.id}` },
+        { event: "*", schema: "public", table: "files", filter: `user_id=eq.${user.id}` },
         () => load(),
       )
       .subscribe();
@@ -107,11 +107,11 @@ export async function softDeleteFile(id: string, storage_path: string | null) {
   if (storage_path) {
     await supabase.storage.from("user-files").remove([storage_path]).catch(() => {});
   }
-  await supabase.from("file_metadata").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  await supabase.from("files").update({ deleted_at: new Date().toISOString() }).eq("id", id);
 }
 
 export async function renameFile(id: string, newName: string) {
-  await supabase.from("file_metadata").update({ file_name: newName }).eq("id", id);
+  await supabase.from("files").update({ filename: newName }).eq("id", id);
 }
 
 export async function createSignedUrl(storage_path: string, expiresIn = 3600) {

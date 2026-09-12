@@ -77,8 +77,8 @@ export function GalleryScreen() {
         const path = `${user.id}/${Date.now()}-${f.name.replace(/[^\w.\-]+/g, "_")}`;
         const { error } = await supabase.storage.from("user-files").upload(path, f, { upsert: false, contentType: f.type });
         if (error) { toast.error(`${f.name}: ${error.message}`); continue; }
-        await supabase.from("file_metadata").insert({
-          user_id: user.id, file_name: f.name, file_size: f.size,
+        await supabase.from("files").insert({
+          user_id: user.id, filename: f.name, size_bytes: f.size,
           file_type: f.type || null, storage_path: path,
         });
       }
@@ -178,7 +178,7 @@ export function GalleryScreen() {
     if (!row.storage_path) return;
     const url = await createSignedUrl(row.storage_path, 300);
     if (!url) return;
-    const a = document.createElement("a"); a.href = url; a.download = row.file_name; document.body.appendChild(a); a.click(); a.remove();
+    const a = document.createElement("a"); a.href = url; a.download = row.filename; document.body.appendChild(a); a.click(); a.remove();
   };
 
   const del = async (row: FileRow) => {
@@ -256,9 +256,9 @@ export function GalleryScreen() {
               onClick={() => setIndex(i)}
               className="relative overflow-hidden bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 vf-gallery-cell"
               whileTap={{ scale: 0.97 }}
-              aria-label={`Open ${m.row.file_name}`}
+              aria-label={`Open ${m.row.filename}`}
             >
-              <img src={m.url} alt={m.row.file_name} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src={m.url} alt={m.row.filename} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               {m.kind === "video" && (
                 <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.25)" }}>
                   <Play size={22} color="#fff" fill="#fff" />
@@ -348,7 +348,7 @@ export function GalleryScreen() {
                 {current.kind === "image" ? (
                   <motion.img
                     src={current.url}
-                    alt={current.row.file_name}
+                    alt={current.row.filename}
                     draggable={false}
                     style={{
                       maxWidth: "min(100%, 96vw)",

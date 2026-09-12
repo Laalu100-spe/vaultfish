@@ -44,10 +44,10 @@ export function UploadScreen({ autoOpen = false }: { autoOpen?: boolean }) {
           .upload(path, f, { cacheControl: "3600", upsert: false, contentType: f.type || undefined });
         if (upErr) throw upErr;
         setQueue((q) => q.map((it) => (it.file === f ? { ...it, pct: 80 } : it)));
-        const { error: dbErr } = await supabase.from("file_metadata").insert({
+        const { error: dbErr } = await supabase.from("files").insert({
           user_id: user.id,
-          file_name: f.name,
-          file_size: f.size,
+          filename: f.name,
+          size_bytes: f.size,
           file_type: f.type || null,
           storage_path: path,
           last_modified: new Date(f.lastModified).toISOString(),

@@ -42,7 +42,7 @@ export function FilesScreen() {
     for (const f of files) {
       const c = categorizeFile(f);
       m[c] = (m[c] ?? 0) + 1;
-      if (f.source === "whatsapp") m.whatsapp = (m.whatsapp ?? 0) + 1;
+      if (f.source_provider === "whatsapp_import") m.whatsapp = (m.whatsapp ?? 0) + 1;
     }
     return m;
   }, [files]);
@@ -52,7 +52,7 @@ export function FilesScreen() {
       tab === "all"
         ? files
         : tab === "whatsapp"
-        ? files.filter((f) => f.source === "whatsapp")
+        ? files.filter((f) => f.source_provider === "whatsapp_import")
         : files.filter((f) => categorizeFile(f) === tab),
     [files, tab],
   );
@@ -69,7 +69,7 @@ export function FilesScreen() {
     const url = await createSignedUrl(f.storage_path, 300);
     if (!url) return toast.error("Could not create download link");
     const a = document.createElement("a");
-    a.href = url; a.download = f.file_name; document.body.appendChild(a); a.click(); a.remove();
+    a.href = url; a.download = f.filename; document.body.appendChild(a); a.click(); a.remove();
   };
 
   const share = async (f: FileRow) => {
@@ -139,10 +139,10 @@ export function FilesScreen() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {f.file_name}
+                    {f.filename}
                   </div>
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-                    {formatBytes(f.file_size)} · {timeAgo(f.created_at)}
+                    {formatBytes(f.size_bytes)} · {timeAgo(f.uploaded_at)}
                   </div>
                 </div>
                 <ChevronRight size={16} className="text-muted shrink-0" />
@@ -172,7 +172,7 @@ export function FilesScreen() {
             style={{ maxWidth: 340, width: "100%", background: "rgba(14,17,24,0.98)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: 20, fontFamily: '"Inter", sans-serif' }}
           >
             <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>Delete this file?</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{confirmDel.file_name}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{confirmDel.filename}</div>
             <div className="flex gap-2 mt-4">
               <button onClick={() => setConfirmDel(null)} className="flex-1" style={{ background: "rgba(255,255,255,0.06)", color: "#fff", padding: 10, borderRadius: 8, fontSize: 13, fontWeight: 600 }}>Cancel</button>
               <button onClick={() => del(confirmDel)} className="flex-1" style={{ background: "#ef4444", color: "#fff", padding: 10, borderRadius: 8, fontSize: 13, fontWeight: 600 }}>Delete</button>
@@ -209,8 +209,8 @@ function FileSheet({
         <div style={{ width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.2)", margin: "0 auto 16px" }} />
         <div className="flex items-start gap-2">
           <div className="flex-1 min-w-0">
-            <div style={{ fontSize: 16, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.file_name}</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{file.file_type ?? "file"} · {formatBytes(file.file_size)}</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.filename}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{file.file_type ?? "file"} · {formatBytes(file.size_bytes)}</div>
           </div>
           <button onClick={onClose} aria-label="Close" style={{ width: 32, height: 32, borderRadius: 999, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X size={16} color="#fff" />

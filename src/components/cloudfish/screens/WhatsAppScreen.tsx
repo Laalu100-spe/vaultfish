@@ -13,7 +13,7 @@ type WAClass = "photos" | "videos" | "voice" | "documents";
 
 function classify(f: FileRow): WAClass {
   const t = (f.file_type ?? "").toLowerCase();
-  const n = (f.file_name ?? "").toLowerCase();
+  const n = (f.filename ?? "").toLowerCase();
   if (t.startsWith("image/") || /\.(png|jpe?g|gif|webp|heic|bmp)$/.test(n)) return "photos";
   if (t.startsWith("video/") || /\.(mp4|mov|avi|mkv|webm|m4v|3gp)$/.test(n)) return "videos";
   if (t.startsWith("audio/") || /\.(mp3|wav|ogg|opus|m4a|aac)$/.test(n)) return "voice";
@@ -44,7 +44,7 @@ function PhotoCell({ f, onOpen }: { f: FileRow; onOpen: (url: string) => void })
       }}
     >
       {url ? (
-        <img src={url} alt={f.file_name} loading="lazy"
+        <img src={url} alt={f.filename} loading="lazy"
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : null}
     </div>
@@ -174,7 +174,7 @@ export function WhatsAppScreen() {
   const [audio, setAudio] = useState<{ url: string; name: string } | null>(null);
   const [confirmClean, setConfirmClean] = useState<{ ids: string[]; bytes: number } | null>(null);
 
-  const waFiles = useMemo(() => files.filter((f) => f.source === "whatsapp"), [files]);
+  const waFiles = useMemo(() => files.filter((f) => f.source_provider === "whatsapp_import"), [files]);
 
   const categorized = useMemo(() => {
     const g = { photos: [] as FileRow[], videos: [] as FileRow[], voice: [] as FileRow[], documents: [] as FileRow[] };
@@ -190,32 +190,32 @@ export function WhatsAppScreen() {
     documents: categorized.documents.length,
   };
   const sizes = {
-    photos: categorized.photos.reduce((s, f) => s + (f.file_size || 0), 0),
-    videos: categorized.videos.reduce((s, f) => s + (f.file_size || 0), 0),
-    voice: categorized.voice.reduce((s, f) => s + (f.file_size || 0), 0),
-    total: waFiles.reduce((s, f) => s + (f.file_size || 0), 0),
+    photos: categorized.photos.reduce((s, f) => s + (f.size_bytes || 0), 0),
+    videos: categorized.videos.reduce((s, f) => s + (f.size_bytes || 0), 0),
+    voice: categorized.voice.reduce((s, f) => s + (f.size_bytes || 0), 0),
+    total: waFiles.reduce((s, f) => s + (f.size_bytes || 0), 0),
   };
 
   // Group files uploaded within ~2 minutes of each other into a "batch"
   const batches = useMemo(() => {
     const sorted = [...waFiles].sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      (a, b) => new Date(a.uploaded_at).getTime() - new Date(b.uploaded_at).getTime(),
     );
     const groups: { key: string; label: string; files: FileRow[]; bytes: number; date: Date }[] = [];
     const WINDOW = 2 * 60 * 1000;
     for (const f of sorted) {
-      const t = new Date(f.created_at).getTime();
+      const t = new Date(f.uploaded_at).getTime();
       const last = groups[groups.length - 1];
-      if (last && t - new Date(last.files[last.files.length - 1].created_at).getTime() <= WINDOW) {
+      if (last && t - new Date(last.files[last.files.length - 1].uploaded_at).getTime() <= WINDOW) {
         last.files.push(f);
-        last.bytes += f.file_size || 0;
+        last.bytes += f.size_bytes || 0;
       } else {
-        const d = new Date(f.created_at);
+        const d = new Date(f.uploaded_at);
         groups.push({
-          key: f.created_at,
+          key: f.uploaded_at,
           label: `Backup — ${d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`,
           files: [f],
-          bytes: f.file_size || 0,
+          bytes: f.size_bytes || 0,
           date: d,
         });
       }
@@ -246,13 +246,13 @@ export function WhatsAppScreen() {
           .upload(path, f, { cacheControl: "3600", upsert: false, contentType: f.type || undefined });
         if (upErr) throw upErr;
         setUploads((q) => q.map((it) => (it.file === f ? { ...it, pct: 80 } : it)));
-        const { error: dbErr } = await supabase.from("file_metadata").insert({
+        const { error: dbErr } = await supabase.from("files").insert({
           user_id: user.id,
-          file_name: f.name,
-          file_size: f.size,
+          filename: f.name,
+          size_bytes: f.size,
           file_type: f.type || null,
           storage_path: path,
-          source: "whatsapp",
+          source_provider: "whatsapp_import",
           last_modified: new Date(f.lastModified).toISOString(),
         });
         if (dbErr) throw dbErr;
@@ -270,18 +270,18 @@ export function WhatsAppScreen() {
   const findDuplicates = () => {
     const byName = new Map<string, FileRow[]>();
     for (const f of waFiles) {
-      const arr = byName.get(f.file_name) ?? [];
+      const arr = byName.get(f.filename) ?? [];
       arr.push(f);
-      byName.set(f.file_name, arr);
+      byName.set(f.filename, arr);
     }
     const dupIds: string[] = [];
     let freed = 0;
     for (const arr of byName.values()) {
       if (arr.length < 2) continue;
-      arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      arr.sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime());
       for (let i = 1; i < arr.length; i++) {
         dupIds.push(arr[i].id);
-        freed += arr[i].file_size || 0;
+        freed += arr[i].size_bytes || 0;
       }
     }
     if (dupIds.length === 0) {
@@ -555,7 +555,7 @@ export function WhatsAppScreen() {
                     onClick={async () => {
                       if (!f.storage_path) return;
                       const url = await createSignedUrl(f.storage_path, 3600);
-                      if (url) setAudio({ url, name: f.file_name });
+                      if (url) setAudio({ url, name: f.filename });
                     }}
                   >
                     <div style={{
@@ -566,10 +566,10 @@ export function WhatsAppScreen() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 500, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {f.file_name}
+                        {f.filename}
                       </div>
                       <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-                        {formatBytes(f.file_size)}
+                        {formatBytes(f.size_bytes)}
                       </div>
                     </div>
                   </div>
@@ -586,7 +586,7 @@ export function WhatsAppScreen() {
                 borderRadius: 14, overflow: "hidden",
               }}>
                 {categorized.documents.map((f, i) => {
-                  const isPdf = /pdf|doc/.test((f.file_type ?? "") + f.file_name.toLowerCase());
+                  const isPdf = /pdf|doc/.test((f.file_type ?? "") + f.filename.toLowerCase());
                   const Icon = isPdf ? FileText : FileIcon;
                   return (
                     <div
@@ -609,10 +609,10 @@ export function WhatsAppScreen() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 500, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {f.file_name}
+                          {f.filename}
                         </div>
                         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-                          {formatBytes(f.file_size)} · {new Date(f.created_at).toLocaleDateString()}
+                          {formatBytes(f.size_bytes)} · {new Date(f.uploaded_at).toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -694,7 +694,7 @@ export function WhatsAppScreen() {
                     const url = await createSignedUrl(f.storage_path, 3600);
                     if (!url) return;
                     if ((f.file_type ?? "").startsWith("image/")) setPreview(url);
-                    else if ((f.file_type ?? "").startsWith("audio/")) setAudio({ url, name: f.file_name });
+                    else if ((f.file_type ?? "").startsWith("audio/")) setAudio({ url, name: f.filename });
                     else window.open(url, "_blank", "noopener,noreferrer");
                   }}
                   style={{
@@ -705,10 +705,10 @@ export function WhatsAppScreen() {
                 >
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, color: "var(--foreground)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {f.file_name}
+                      {f.filename}
                     </div>
                     <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
-                      {formatBytes(f.file_size)}
+                      {formatBytes(f.size_bytes)}
                     </div>
                   </div>
                 </div>
