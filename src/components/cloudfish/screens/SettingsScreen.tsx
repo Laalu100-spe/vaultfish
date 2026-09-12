@@ -46,7 +46,7 @@ export function SettingsScreen() {
   const displayName = (user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? user?.email ?? "VaultFish user") as string;
   const email = user?.email ?? "";
 
-  const totalBytes = files.reduce((s, f) => s + Number(f.file_size), 0);
+  const totalBytes = files.reduce((s, f) => s + Number(f.size_bytes), 0);
   const pct = Math.min(100, Math.round((totalBytes / FREE_LIMIT) * 100));
 
   const requestNotifications = async () => {

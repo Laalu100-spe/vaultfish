@@ -14,14 +14,14 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
   const { accounts: connected } = useConnectedAccounts();
   const { files, loading } = useFiles();
 
-  const totalBytes = files.reduce((s, f) => s + Number(f.file_size ?? 0), 0);
+  const totalBytes = files.reduce((s, f) => s + Number(f.size_bytes ?? 0), 0);
   const pct = Math.min(100, Math.round((totalBytes / FREE_LIMIT_BYTES) * 100));
 
   // Cleanable estimate: screenshots + files > 100MB + duplicates by name
   const nameGroups = new Map<string, number>();
-  files.forEach((f) => nameGroups.set(f.file_name, (nameGroups.get(f.file_name) ?? 0) + 1));
-  const dupBytes = files.filter((f) => (nameGroups.get(f.file_name) ?? 0) > 1).reduce((s, f) => s + Number(f.file_size), 0);
-  const largeBytes = files.filter((f) => Number(f.file_size) > 100 * 1024 * 1024).reduce((s, f) => s + Number(f.file_size), 0);
+  files.forEach((f) => nameGroups.set(f.filename, (nameGroups.get(f.filename) ?? 0) + 1));
+  const dupBytes = files.filter((f) => (nameGroups.get(f.filename) ?? 0) > 1).reduce((s, f) => s + Number(f.size_bytes), 0);
+  const largeBytes = files.filter((f) => Number(f.size_bytes) > 100 * 1024 * 1024).reduce((s, f) => s + Number(f.size_bytes), 0);
   const cleanableBytes = Math.max(0, dupBytes + largeBytes);
 
   const platformAccounts = (["google_drive", "dropbox", "onedrive"] as const)

@@ -24,7 +24,7 @@ export function AnalyticsScreen() {
     const map = new Map<FileCategory, number>();
     for (const f of files) {
       const c = categorizeFile(f);
-      map.set(c, (map.get(c) ?? 0) + Number(f.file_size));
+      map.set(c, (map.get(c) ?? 0) + Number(f.size_bytes));
     }
     return Array.from(map.entries()).map(([k, v]) => ({ name: CAT_LABEL[k], value: v, color: CAT_COLOR[k] }));
   }, [files]);
@@ -37,7 +37,7 @@ export function AnalyticsScreen() {
     for (let i = 29; i >= 0; i--) {
       const day = new Date(now - i * 86400000);
       const key = day.toISOString().slice(0, 10);
-      const count = files.filter((f) => f.created_at.slice(0, 10) <= key).length;
+      const count = files.filter((f) => f.uploaded_at.slice(0, 10) <= key).length;
       days.push({ d: `${day.getMonth() + 1}/${day.getDate()}`, v: count });
     }
     return days;

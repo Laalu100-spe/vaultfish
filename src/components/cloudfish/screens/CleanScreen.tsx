@@ -13,13 +13,13 @@ export function CleanScreen() {
   const [cleaning, setCleaning] = useState(false);
 
   const cats: Category[] = useMemo(() => {
-    const large = files.filter((f) => Number(f.file_size) > 100 * 1024 * 1024);
-    const screenshots = files.filter((f) => /screenshot/i.test(f.file_name));
+    const large = files.filter((f) => Number(f.size_bytes) > 100 * 1024 * 1024);
+    const screenshots = files.filter((f) => /screenshot/i.test(f.filename));
     const sixMonths = Date.now() - 1000 * 60 * 60 * 24 * 180;
-    const old = files.filter((f) => new Date(f.created_at).getTime() < sixMonths);
+    const old = files.filter((f) => new Date(f.uploaded_at).getTime() < sixMonths);
     const nameCount = new Map<string, number>();
-    files.forEach((f) => nameCount.set(f.file_name, (nameCount.get(f.file_name) ?? 0) + 1));
-    const dupes = files.filter((f) => (nameCount.get(f.file_name) ?? 0) > 1);
+    files.forEach((f) => nameCount.set(f.filename, (nameCount.get(f.filename) ?? 0) + 1));
+    const dupes = files.filter((f) => (nameCount.get(f.filename) ?? 0) > 1);
     return [
       { id: "dup", title: "Duplicate files", color: "#a78bfa", files: dupes },
       { id: "large", title: "Large files (>100 MB)", color: "#fb923c", files: large },
@@ -28,10 +28,10 @@ export function CleanScreen() {
     ].filter((c) => c.files.length > 0);
   }, [files]);
 
-  const totalCleanable = cats.reduce((s, c) => s + c.files.reduce((a, f) => a + Number(f.file_size), 0), 0);
+  const totalCleanable = cats.reduce((s, c) => s + c.files.reduce((a, f) => a + Number(f.size_bytes), 0), 0);
   const selectedBytes = useMemo(() => {
     let b = 0;
-    for (const c of cats) for (const f of c.files) if (checked.has(f.id)) b += Number(f.file_size);
+    for (const c of cats) for (const f of c.files) if (checked.has(f.id)) b += Number(f.size_bytes);
     return b;
   }, [cats, checked]);
 
@@ -48,7 +48,7 @@ export function CleanScreen() {
     setCleaning(true);
     const targets: FileRow[] = [];
     for (const c of cats) for (const f of c.files) if (checked.has(f.id)) targets.push(f);
-    const freed = targets.reduce((s, f) => s + Number(f.file_size), 0);
+    const freed = targets.reduce((s, f) => s + Number(f.size_bytes), 0);
     await Promise.all(targets.map((f) => softDeleteFile(f.id, f.storage_path)));
     setChecked(new Set());
     setCleaning(false);
@@ -90,7 +90,7 @@ export function CleanScreen() {
       <div className="space-y-2">
         {cats.map((cat) => {
           const isOpen = openCat === cat.id;
-          const catBytes = cat.files.reduce((s, f) => s + Number(f.file_size), 0);
+          const catBytes = cat.files.reduce((s, f) => s + Number(f.size_bytes), 0);
           return (
             <div
               key={cat.id}
@@ -119,8 +119,8 @@ export function CleanScreen() {
                           {isChecked && <Check size={12} color="#fff" strokeWidth={3} />}
                         </button>
                         <div className="flex-1 min-w-0">
-                          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.file_name}</div>
-                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{formatBytes(Number(f.file_size))}</div>
+                          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.filename}</div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{formatBytes(Number(f.size_bytes))}</div>
                         </div>
                       </div>
                     );
