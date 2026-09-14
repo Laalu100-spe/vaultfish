@@ -1,5 +1,5 @@
 import { Card } from "../ui";
-import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, UploadCloud } from "lucide-react";
+import { ArrowUpFromLine, ScanLine, GitMerge, LayoutDashboard, Sparkles, UploadCloud, ScanText, History, Clock, ArrowRight } from "lucide-react";
 import { PlatformIcon, PLATFORM_COLORS } from "../PlatformIcons";
 import { useConnectedAccounts, PLATFORM_LABEL, GB } from "@/hooks/useConnectedAccounts";
 import { useFiles, categorizeFile, formatBytes } from "@/hooks/useFiles";
