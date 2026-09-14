@@ -8,6 +8,10 @@ import {
   SlidersHorizontal,
   MessageCircle,
   Grid3x3,
+  Sparkles,
+  ScanText,
+  History,
+  Clock,
   X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -46,13 +50,17 @@ function MascotFish() {
   );
 }
 
-export type ScreenId = "home" | "gallery" | "files" | "whatsapp" | "clouds" | "upload" | "analytics" | "clean" | "settings";
+export type ScreenId = "home" | "gallery" | "files" | "whatsapp" | "clouds" | "upload" | "analytics" | "clean" | "settings" | "ask" | "search" | "versions" | "shares";
 
 const NAV: { id: ScreenId; label: string; icon: any }[] = [
   { id: "home", label: "Home", icon: House },
   { id: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
   { id: "files", label: "Files", icon: Files },
   { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { id: "ask", label: "Ask Your Vault", icon: Sparkles },
+  { id: "search", label: "Smart Search", icon: ScanText },
+  { id: "versions", label: "Versions", icon: History },
+  { id: "shares", label: "Timed Sharing", icon: Clock },
   { id: "clouds", label: "Clouds", icon: Layers },
   { id: "upload", label: "Upload", icon: ArrowUpFromLine },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
@@ -76,7 +84,7 @@ function Logo({ size = 20 }: { size?: number }) {
 }
 
 const MOBILE_MAIN: ScreenId[] = ["home", "gallery", "files", "whatsapp", "settings"];
-const MOBILE_MORE: ScreenId[] = ["clouds", "upload", "analytics", "clean"];
+const MOBILE_MORE: ScreenId[] = ["ask", "search", "versions", "shares", "clouds", "upload", "analytics", "clean"];
 
 export function Layout({
   current,

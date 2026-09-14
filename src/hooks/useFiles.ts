@@ -21,6 +21,15 @@ export type FileRow = {
 
 export type FileCategory = "photos" | "videos" | "documents" | "apk" | "downloads" | "other";
 
+export const PROVIDER_LABEL: Record<string, string> = {
+  google_drive: "Google Drive",
+  dropbox: "Dropbox",
+  onedrive: "OneDrive",
+  whatsapp_import: "WhatsApp",
+  whatsapp: "WhatsApp",
+  upload: "VaultFish",
+};
+
 export function categorizeFile(f: Pick<FileRow, "file_type" | "filename">): FileCategory {
   const t = (f.file_type ?? "").toLowerCase();
   const n = (f.filename ?? "").toLowerCase();
