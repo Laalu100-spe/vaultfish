@@ -142,6 +142,54 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
       )}
 
       <div>
+        <SectionLabel>Across all your clouds</SectionLabel>
+        <button
+          onClick={() => onNav("ask")}
+          className="w-full flex items-center gap-4 text-left"
+          style={{
+            background: "linear-gradient(135deg, rgba(124,58,237,0.18), rgba(77,144,254,0.10))",
+            border: "1px solid rgba(124,58,237,0.30)",
+            borderRadius: 18,
+            padding: "20px 22px",
+          }}
+        >
+          <div className="flex items-center justify-center shrink-0" style={{ width: 46, height: 46, borderRadius: 13, background: "rgba(124,58,237,0.24)" }}>
+            <Sparkles size={22} strokeWidth={1.5} style={{ color: "#a78bfa" }} />
+          </div>
+          <div className="min-w-0" style={{ flex: 1 }}>
+            <div style={{ fontSize: 15.5, fontWeight: 700, color: "var(--foreground)" }}>Ask Your Vault</div>
+            <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 3 }}>
+              Ask anything — answered across all your connected clouds
+            </div>
+          </div>
+          <ArrowRight size={18} style={{ color: "#a78bfa" }} className="shrink-0" />
+        </button>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3" style={{ marginTop: 12 }}>
+          {crossCloud.map((c) => {
+            const I = c.i;
+            return (
+              <button
+                key={c.l}
+                onClick={() => onNav(c.to)}
+                className="flex items-start gap-3 text-left"
+                style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "14px 16px" }}
+              >
+                <div className="flex items-center justify-center shrink-0" style={{ width: 34, height: 34, borderRadius: 10, background: c.bg }}>
+                  <I size={17} strokeWidth={1.5} style={{ color: c.color }} />
+                </div>
+                <div className="min-w-0">
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--foreground)" }}>{c.l}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{c.d}</div>
+                  <div style={{ fontSize: 10.5, color: c.color, marginTop: 6, fontWeight: 600 }}>Works across all your clouds</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
         <SectionLabel>Quick Actions</SectionLabel>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {quickActions.map((a) => {
