@@ -10,6 +10,10 @@ import { AnalyticsScreen } from "@/components/cloudfish/screens/AnalyticsScreen"
 import { CleanScreen } from "@/components/cloudfish/screens/CleanScreen";
 import { SettingsScreen } from "@/components/cloudfish/screens/SettingsScreen";
 import { WhatsAppScreen } from "@/components/cloudfish/screens/WhatsAppScreen";
+import { AskScreen } from "@/components/cloudfish/screens/AskScreen";
+import { SearchScreen } from "@/components/cloudfish/screens/SearchScreen";
+import { VersionsScreen } from "@/components/cloudfish/screens/VersionsScreen";
+import { SharesScreen } from "@/components/cloudfish/screens/SharesScreen";
 import { Onboarding } from "@/components/cloudfish/Onboarding";
 import { LoadingOverlay } from "@/components/cloudfish/LoadingOverlay";
 import {
@@ -111,6 +115,18 @@ function AuthedApp() {
           )}
           {screen === "whatsapp" && (
             <WithSkeleton skeleton={<GenericSkeleton />}><WhatsAppScreen /></WithSkeleton>
+          )}
+          {screen === "ask" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}><AskScreen /></WithSkeleton>
+          )}
+          {screen === "search" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}><SearchScreen /></WithSkeleton>
+          )}
+          {screen === "versions" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}><VersionsScreen /></WithSkeleton>
+          )}
+          {screen === "shares" && (
+            <WithSkeleton skeleton={<GenericSkeleton />}><SharesScreen /></WithSkeleton>
           )}
         </div>
       </Layout>
