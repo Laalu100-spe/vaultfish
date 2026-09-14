@@ -41,6 +41,12 @@ export function HomeScreen({ onNav }: { onNav: (s: any) => void }) {
     { i: LayoutDashboard, l: "Analytics", to: "analytics", color: "#2dd4bf", bg: "rgba(20,184,166,0.12)" },
   ];
 
+  const crossCloud = [
+    { i: ScanText, l: "Smart Search", d: "Search names and text inside files", to: "search", color: "#2dd4bf", bg: "rgba(20,184,166,0.12)" },
+    { i: History, l: "Version History", d: "Restore any earlier version", to: "versions", color: "#a78bfa", bg: "rgba(139,92,246,0.12)" },
+    { i: Clock, l: "Timed Sharing", d: "Links that expire on their own", to: "shares", color: "#fbbf24", bg: "rgba(217,119,6,0.14)" },
+  ];
+
   return (
     <div className="flex flex-col" style={{ gap: 24 }}>
       <div>
