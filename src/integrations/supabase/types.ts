@@ -14,38 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_user_connections: {
+        Row: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connection_key_ciphertext?: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       connected_accounts: {
         Row: {
           connected_at: string
+          connector_slot: number
           display_name: string | null
           email: string
           id: string
           is_active: boolean
+          last_synced_at: string | null
           platform: string
           storage_total: number
           storage_used: number
+          sync_error: string | null
+          sync_status: string
           user_id: string
         }
         Insert: {
           connected_at?: string
+          connector_slot?: number
           display_name?: string | null
           email: string
           id?: string
           is_active?: boolean
+          last_synced_at?: string | null
           platform: string
           storage_total?: number
           storage_used?: number
+          sync_error?: string | null
+          sync_status?: string
           user_id: string
         }
         Update: {
           connected_at?: string
+          connector_slot?: number
           display_name?: string | null
           email?: string
           id?: string
           is_active?: boolean
+          last_synced_at?: string | null
           platform?: string
           storage_total?: number
           storage_used?: number
+          sync_error?: string | null
+          sync_status?: string
           user_id?: string
         }
         Relationships: []
@@ -186,6 +225,8 @@ export type Database = {
         Row: {
           cloud_path: string | null
           deleted_at: string | null
+          external_id: string | null
+          external_url: string | null
           file_type: string | null
           filename: string
           id: string
@@ -202,6 +243,8 @@ export type Database = {
         Insert: {
           cloud_path?: string | null
           deleted_at?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_type?: string | null
           filename: string
           id?: string
@@ -218,6 +261,8 @@ export type Database = {
         Update: {
           cloud_path?: string | null
           deleted_at?: string | null
+          external_id?: string | null
+          external_url?: string | null
           file_type?: string | null
           filename?: string
           id?: string
