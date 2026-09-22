@@ -178,12 +178,16 @@ export function CloudsScreen() {
       <SectionTitle sub="Connect and manage your cloud accounts">Connected Clouds</SectionTitle>
 
       {status && (
-        <Card className="p-3 flex items-center gap-2 text-sm" style={{ color: "#4d90fe" }}>
-          {busy && <Loader2 size={15} className="animate-spin" />} {status}
+        <Card className="p-3">
+          <div className="flex items-center gap-2 text-sm" style={{ color: "#4d90fe" }}>
+            {busy && <Loader2 size={15} className="animate-spin" />} {status}
+          </div>
         </Card>
       )}
       {error && (
-        <Card className="p-3 text-sm" style={{ color: "#ef4444" }}>{error}</Card>
+        <Card className="p-3">
+          <div className="text-sm" style={{ color: "#ef4444" }}>{error}</div>
+        </Card>
       )}
 
       {driveAccounts.map((a) => {
