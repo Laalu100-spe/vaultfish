@@ -7,7 +7,9 @@ export const CONNECTOR_ID = "google_drive";
 export const GOOGLE_DRIVE_SCOPES = [
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/drive.file",
+  // Read access to every file in the account. drive.file would only ever return
+  // files this app itself created, which is why the first sync found 0 files.
+  "https://www.googleapis.com/auth/drive.readonly",
 ];
 
 /** Each extra Google account of the same user gets its own gateway app-user id + storage slot. */
@@ -200,8 +202,12 @@ export const syncDriveAccount = createServerFn({ method: "POST" })
       for (let page = 0; page < 10; page++) {
         const params = new URLSearchParams({
           pageSize: "100",
-          q: "trashed = false",
+          q: "trashed = false and mimeType != 'application/vnd.google-apps.folder'",
           orderBy: "modifiedTime desc",
+          spaces: "drive",
+          corpora: "user",
+          includeItemsFromAllDrives: "false",
+          supportsAllDrives: "false",
           fields: "nextPageToken, files(id,name,mimeType,size,modifiedTime,webViewLink)",
         });
         if (pageToken) params.set("pageToken", pageToken);
@@ -219,8 +225,15 @@ export const syncDriveAccount = createServerFn({ method: "POST" })
             .eq("id", account.id);
           return { synced: 0, reconnectRequired: true };
         }
-        if (!res.ok) throw new Error(`Google Drive listing failed (${res.status})`);
-        const body = (await res.json()) as { files?: DriveFile[]; nextPageToken?: string };
+        const raw = await res.text();
+        if (!res.ok) {
+          console.error(`[gdrive] files.list failed [${res.status}]: ${raw}`);
+          throw new Error(`Google Drive listing failed (${res.status}): ${raw.slice(0, 300)}`);
+        }
+        const body = JSON.parse(raw) as { files?: DriveFile[]; nextPageToken?: string };
+        if (page === 0 && (body.files?.length ?? 0) === 0) {
+          console.warn(`[gdrive] files.list returned no files. Raw body: ${raw.slice(0, 500)}`);
+        }
         collected.push(...(body.files ?? []));
         pageToken = body.nextPageToken;
         if (!pageToken) break;
