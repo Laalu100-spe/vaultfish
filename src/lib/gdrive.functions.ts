@@ -202,8 +202,12 @@ export const syncDriveAccount = createServerFn({ method: "POST" })
       for (let page = 0; page < 10; page++) {
         const params = new URLSearchParams({
           pageSize: "100",
-          q: "trashed = false",
+          q: "trashed = false and mimeType != 'application/vnd.google-apps.folder'",
           orderBy: "modifiedTime desc",
+          spaces: "drive",
+          corpora: "user",
+          includeItemsFromAllDrives: "false",
+          supportsAllDrives: "false",
           fields: "nextPageToken, files(id,name,mimeType,size,modifiedTime,webViewLink)",
         });
         if (pageToken) params.set("pageToken", pageToken);
