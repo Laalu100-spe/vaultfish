@@ -57,15 +57,26 @@ export function FilesScreen() {
     [files, tab],
   );
 
+  /** Cloud-synced files (Google Drive etc.) live in the provider, not our storage. */
+  const cloudLink = (f: FileRow) =>
+    (f as unknown as { external_url?: string | null }).external_url ?? null;
+
   const openInTab = async (f: FileRow) => {
-    if (!f.storage_path) return toast.error("No storage path");
+    const link = cloudLink(f);
+    if (link) return void window.open(link, "_blank", "noopener,noreferrer");
+    if (!f.storage_path) return toast.error("This file has no location yet");
     const url = await createSignedUrl(f.storage_path, 3600);
     if (!url) return toast.error("Could not open file");
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const download = async (f: FileRow) => {
-    if (!f.storage_path) return toast.error("No storage path");
+    const link = cloudLink(f);
+    if (link) {
+      window.open(link, "_blank", "noopener,noreferrer");
+      return;
+    }
+    if (!f.storage_path) return toast.error("This file has no location yet");
     const url = await createSignedUrl(f.storage_path, 300);
     if (!url) return toast.error("Could not create download link");
     const a = document.createElement("a");
@@ -73,7 +84,12 @@ export function FilesScreen() {
   };
 
   const share = async (f: FileRow) => {
-    if (!f.storage_path) return toast.error("No storage path");
+    const link = cloudLink(f);
+    if (link) {
+      await navigator.clipboard.writeText(link);
+      return void toast.success("Link copied");
+    }
+    if (!f.storage_path) return toast.error("This file has no location yet");
     const url = await createSignedUrl(f.storage_path, 60 * 60 * 24 * 7);
     if (!url) return toast.error("Could not create link");
     await navigator.clipboard.writeText(url);

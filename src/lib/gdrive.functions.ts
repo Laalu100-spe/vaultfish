@@ -199,7 +199,7 @@ export const syncDriveAccount = createServerFn({ method: "POST" })
     try {
       const collected: DriveFile[] = [];
       let pageToken: string | undefined;
-      for (let page = 0; page < 10; page++) {
+      for (let page = 0; page < 50; page++) {
         const params = new URLSearchParams({
           pageSize: "100",
           q: "trashed = false and mimeType != 'application/vnd.google-apps.folder'",
