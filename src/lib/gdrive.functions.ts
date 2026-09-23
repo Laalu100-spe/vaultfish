@@ -7,7 +7,9 @@ export const CONNECTOR_ID = "google_drive";
 export const GOOGLE_DRIVE_SCOPES = [
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/drive.file",
+  // Read access to every file in the account. drive.file would only ever return
+  // files this app itself created, which is why the first sync found 0 files.
+  "https://www.googleapis.com/auth/drive.readonly",
 ];
 
 /** Each extra Google account of the same user gets its own gateway app-user id + storage slot. */
