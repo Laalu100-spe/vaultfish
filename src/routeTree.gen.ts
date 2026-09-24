@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as OauthGoogleDriveReturnRouteImport } from './routes/oauth/google-drive/return'
+import { Route as ApiPublicMediaFileIdRouteImport } from './routes/api/public/media/$fileId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,57 @@ const OauthGoogleDriveReturnRoute = OauthGoogleDriveReturnRouteImport.update({
   path: '/oauth/google-drive/return',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMediaFileIdRoute = ApiPublicMediaFileIdRouteImport.update({
+  id: '/api/public/media/$fileId',
+  path: '/api/public/media/$fileId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/s/$token': typeof STokenRoute
   '/oauth/google-drive/return': typeof OauthGoogleDriveReturnRoute
+  '/api/public/media/$fileId': typeof ApiPublicMediaFileIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/s/$token': typeof STokenRoute
   '/oauth/google-drive/return': typeof OauthGoogleDriveReturnRoute
+  '/api/public/media/$fileId': typeof ApiPublicMediaFileIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/s/$token': typeof STokenRoute
   '/oauth/google-drive/return': typeof OauthGoogleDriveReturnRoute
+  '/api/public/media/$fileId': typeof ApiPublicMediaFileIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/s/$token' | '/oauth/google-drive/return'
+  fullPaths:
+    | '/'
+    | '/s/$token'
+    | '/oauth/google-drive/return'
+    | '/api/public/media/$fileId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/s/$token' | '/oauth/google-drive/return'
-  id: '__root__' | '/' | '/s/$token' | '/oauth/google-drive/return'
+  to:
+    | '/'
+    | '/s/$token'
+    | '/oauth/google-drive/return'
+    | '/api/public/media/$fileId'
+  id:
+    | '__root__'
+    | '/'
+    | '/s/$token'
+    | '/oauth/google-drive/return'
+    | '/api/public/media/$fileId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   STokenRoute: typeof STokenRoute
   OauthGoogleDriveReturnRoute: typeof OauthGoogleDriveReturnRoute
+  ApiPublicMediaFileIdRoute: typeof ApiPublicMediaFileIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OauthGoogleDriveReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/media/$fileId': {
+      id: '/api/public/media/$fileId'
+      path: '/api/public/media/$fileId'
+      fullPath: '/api/public/media/$fileId'
+      preLoaderRoute: typeof ApiPublicMediaFileIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +119,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   STokenRoute: STokenRoute,
   OauthGoogleDriveReturnRoute: OauthGoogleDriveReturnRoute,
+  ApiPublicMediaFileIdRoute: ApiPublicMediaFileIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
