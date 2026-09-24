@@ -10,6 +10,9 @@ import {
   useFiles, categorizeFile, formatBytes, timeAgo,
   softDeleteFile, createSignedUrl, type FileCategory, type FileRow,
 } from "@/hooks/useFiles";
+import { useConnectedAccounts } from "@/hooks/useConnectedAccounts";
+import { ProviderBadge } from "../ProviderBadge";
+import { canPreviewInApp, MediaViewer } from "../MediaViewer";
 
 const TABS: { id: "all" | FileCategory | "whatsapp"; label: string }[] = [
   { id: "all", label: "All" },
@@ -33,9 +36,12 @@ const CAT_ICON: Record<FileCategory, any> = {
 
 export function FilesScreen() {
   const { files, loading } = useFiles();
+  const { accounts } = useConnectedAccounts();
   const [tab, setTab] = useState<"all" | FileCategory | "whatsapp">("all");
+  const [accountFilter, setAccountFilter] = useState("all");
   const [sheetFor, setSheetFor] = useState<FileRow | null>(null);
   const [confirmDel, setConfirmDel] = useState<FileRow | null>(null);
+  const [viewerFileId, setViewerFileId] = useState<string | null>(null);
 
   const counts = useMemo(() => {
     const m: Record<string, number> = { all: files.length, whatsapp: 0 };
@@ -47,21 +53,30 @@ export function FilesScreen() {
     return m;
   }, [files]);
 
-  const visible = useMemo(
-    () =>
-      tab === "all"
+  const categoryFiles = useMemo(
+    () => tab === "all"
         ? files
         : tab === "whatsapp"
         ? files.filter((f) => f.source_provider === "whatsapp_import")
         : files.filter((f) => categorizeFile(f) === tab),
     [files, tab],
   );
+  const visible = useMemo(() => categoryFiles.filter((file) => {
+    if (accountFilter === "all") return true;
+    if (accountFilter === "vaultfish") return !file.source_account_id;
+    return file.source_account_id === accountFilter;
+  }), [accountFilter, categoryFiles]);
 
   /** Cloud-synced files (Google Drive etc.) live in the provider, not our storage. */
   const cloudLink = (f: FileRow) =>
     (f as unknown as { external_url?: string | null }).external_url ?? null;
 
   const openInTab = async (f: FileRow) => {
+    if (canPreviewInApp(f)) {
+      setSheetFor(null);
+      setViewerFileId(f.id);
+      return;
+    }
     const link = cloudLink(f);
     if (link) return void window.open(link, "_blank", "noopener,noreferrer");
     if (!f.storage_path) return toast.error("This file has no location yet");
@@ -127,6 +142,16 @@ export function FilesScreen() {
         })}
       </div>
 
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }} aria-label="Filter by connected account">
+        <button className={`vf-account-filter ${accountFilter === "all" ? "is-active" : ""}`} onClick={() => setAccountFilter("all")}>All accounts</button>
+        <button className={`vf-account-filter ${accountFilter === "vaultfish" ? "is-active" : ""}`} onClick={() => setAccountFilter("vaultfish")}>VaultFish</button>
+        {accounts.map((account) => (
+          <button key={account.id} className={`vf-account-filter ${accountFilter === account.id ? "is-active" : ""}`} onClick={() => setAccountFilter(account.id)}>
+            {account.email}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="text-muted text-sm">Loading files…</div>
       ) : visible.length === 0 ? (
@@ -150,8 +175,9 @@ export function FilesScreen() {
                 onClick={() => setSheetFor(f)}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-white/5 transition-colors"
               >
-                <div className="flex items-center justify-center shrink-0" style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="relative flex items-center justify-center shrink-0" style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <Icon size={18} strokeWidth={1.5} color="#9ca3af" />
+                  <span className="absolute -bottom-1 -right-1"><ProviderBadge file={f} accounts={accounts} compact /></span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div style={{ fontFamily: '"Inter", sans-serif', fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -196,6 +222,9 @@ export function FilesScreen() {
           </div>
         </div>,
         document.body,
+      )}
+      {viewerFileId && (
+        <MediaViewer files={visible} initialFileId={viewerFileId} accounts={accounts} onClose={() => setViewerFileId(null)} />
       )}
     </div>
   );
